@@ -35,8 +35,11 @@ public class TowerCombat : MonoBehaviour
     {
         if (Time.time - lastShotTime > 1f / fireRate)
         {
-            Debug.Log($"Tower shoots at enemy. Damage: {damage}");
-            Debug.Log($"Enemy position is {enemy.transform.position}");
+            EnemyHP enemyHP = enemy.GetComponent<EnemyHP>();
+            if (enemyHP != null)
+            {
+                enemyHP.TakeDamage(damage);   
+            }
             lastShotTime = Time.time;
         }
     }
