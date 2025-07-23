@@ -13,6 +13,7 @@ public class WaveManager : MonoBehaviour
     public float timeBetweenWaves = 5f;
     public float timeBetweenEnemies = 1f;
     public int totalWaves = 5;
+    public Transform playerBase;
     
     private int currentWave = 0;
     private bool waveInProgress = false;
@@ -56,6 +57,7 @@ public class WaveManager : MonoBehaviour
         if (enemyMovement != null)
         {
             enemyMovement.target = targetPoint;
+            enemyMovement.secondaryTarget = playerBase;
         }
     }
 }

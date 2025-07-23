@@ -4,12 +4,14 @@ using UnityEngine.AI;
 public class EnemyMovement : MonoBehaviour
 {
     public Transform target;
+    public Transform secondaryTarget;
     public float attackRange = 2f;
     public int attackDamage = 10;
     public float attackSpeed = 1f;
     
     NavMeshAgent agent;
     float lastAttackTime;
+    private bool gateDestroyed = false;
     
     void Start()
     {
@@ -18,6 +20,14 @@ public class EnemyMovement : MonoBehaviour
         {
             agent.SetDestination(target.position);
         }
+        
+        // subscribe to Gate Destroyed event
+        GateHealth.OnGateDestroyed.AddListener(OnGateDestroyed);
+    }
+
+    void OnDestroy()
+    {
+        GateHealth.OnGateDestroyed.RemoveListener(OnGateDestroyed);
     }
 
     void Update()
@@ -28,13 +38,11 @@ public class EnemyMovement : MonoBehaviour
 
         if (distanceToTarget <= attackRange)
         {
-            // stop when facing an obstacle
             agent.isStopped = true;
             AttackTarget();
         }
         else
         {
-            // keep moving towards target
             agent.isStopped = false;
             agent.SetDestination(target.position);
         }
@@ -48,9 +56,27 @@ public class EnemyMovement : MonoBehaviour
             if (gateHealth != null)
             {
                 gateHealth.TakeDamage(attackDamage);
-                lastAttackTime =  Time.time;
-                Debug.Log("Enemy at the gates!");
+                lastAttackTime = Time.time;
+                Debug.Log("Enemy attacking gate!");
             }
+            else
+            {
+                // swtich attack to player base. Implementation of HP to come
+                Debug.Log("Go for base!");
+                lastAttackTime = Time.time;
+            }
+        }
+    }
+
+    // Event handler, called when gate is destroyed
+    void OnGateDestroyed()
+    {
+        if (secondaryTarget != null && !gateDestroyed)
+        {
+            target = secondaryTarget;
+            agent.SetDestination(target.position);
+            gateDestroyed = true;
+            Debug.Log("EVENT RECEIVED, enemy swithching attack to player base");
         }
     }
 }

@@ -1,9 +1,13 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 public class GateHealth : MonoBehaviour
 {
     public int maxHealth = 100;
     public int currentHealth;
+
+    // static even for enemies to listen to
+    public static UnityEvent OnGateDestroyed = new UnityEvent();
     
     void Start()
     {
@@ -23,7 +27,12 @@ public class GateHealth : MonoBehaviour
 
     void DestroyGate()
     {
-        Debug.Log("Gate destroyed");
+        Debug.Log("GATE DESTROYED, Broadcasting to enemies...");
+
+        // Use an event to notify all enemies
+        OnGateDestroyed.Invoke();
+        
         Destroy(gameObject);
     }
+
 }

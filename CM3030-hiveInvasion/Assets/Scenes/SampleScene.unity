@@ -1304,6 +1304,7 @@ MonoBehaviour:
   timeBetweenWaves: 5
   timeBetweenEnemies: 1
   totalWaves: 5
+  playerBase: {fileID: 1564578347}
 --- !u!4 &1768692432
 Transform:
   m_ObjectHideFlags: 0
@@ -1821,6 +1822,7 @@ MonoBehaviour:
   timeBetweenWaves: 5
   timeBetweenEnemies: 1
   totalWaves: 5
+  playerBase: {fileID: 1564578347}
 --- !u!4 &2018505247
 Transform:
   m_ObjectHideFlags: 0
