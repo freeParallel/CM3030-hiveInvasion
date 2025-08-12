@@ -8,10 +8,6 @@ public class HeroController : MonoBehaviour
     NavMeshAgent agent;
     Camera playerCamera;
     
-    [Header("Tower Placement")]
-    public GameObject towerPrefab;
-    public Material previewMaterial;
-    
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -25,12 +21,6 @@ public class HeroController : MonoBehaviour
         {
             MoveHero();
         }
-        
-        // Left Click
-        if (Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            PlaceTower();
-        }
     }
 
     void MoveHero()
@@ -38,24 +28,38 @@ public class HeroController : MonoBehaviour
         Ray ray = playerCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            if (hit.collider.name == "Ground")
+            // check if there's walkable ground and nothing on path
+            if (IsWalkableGround(hit.collider))
             {
-                agent.SetDestination(hit.point);
-                Debug.Log("Hero moving to: " + hit.point);
+                // ensure NavMeshAgent can reach destination
+                if (agent.enabled && IsValidDestination(hit.point))
+                {
+                    agent.SetDestination(hit.point);
+                    Debug.Log("Debug going to " + hit.point);
+                }
+                else
+                {
+                    Debug.Log("No way to walk");
+                }
+            }
+            else
+            {
+                Debug.Log("Can't walk to " + hit.collider.name);
             }
         }
     }
-
-    void PlaceTower()
+    
+    // helper functions for hero movement
+    bool IsWalkableGround(Collider hitCollider)
     {
-        Ray ray = playerCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
-        if (Physics.Raycast(ray, out RaycastHit hit))
-        {
-            if (hit.collider.name == "Ground")
-            {
-                Instantiate(towerPrefab, hit.point, Quaternion.identity);
-                Debug.Log("Tower placed at: " + hit.point);
-            }
-        }
+        // check layer instead of name
+        return hitCollider.gameObject.layer == LayerMask.NameToLayer("Ground");
+    }
+
+    bool IsValidDestination(Vector3 destination)
+    {
+        // check if NavMesh can reach the click point destination
+        NavMeshPath path = new NavMeshPath();
+        return agent.CalculatePath(destination, path) && path.status == NavMeshPathStatus.PathComplete;
     }
 }
