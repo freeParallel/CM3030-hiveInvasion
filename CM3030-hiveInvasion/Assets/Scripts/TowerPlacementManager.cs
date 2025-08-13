@@ -69,6 +69,13 @@ public class TowerPlacementManager : MonoBehaviour
 
     void TryPlaceTower()
     {
+        // check if we can afford a tower 
+        if (!ResourceManager.Instance.CanAfford(ResourceManager.Instance.GetTowerCost()))
+        {
+            Debug.Log($"Can't afford tower! You need {ResourceManager.Instance.GetTowerCost()} points. You have {ResourceManager.Instance.GetCurrentPoints()}");
+            return;
+        }
+        
         Ray ray = playerCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
@@ -78,11 +85,15 @@ public class TowerPlacementManager : MonoBehaviour
                 // check position
                 if (IsPositionClear(hit.point))
                 {
-                    GameObject newTower = Instantiate(towerPrefab, hit.point, Quaternion.identity);
-                    newTower.tag = "Tower";
-                    
-                    Debug.Log("Tower placement at " + hit.point);
-                    CancelPlacementMode();
+                    // deduct points before placing tower
+                    if (ResourceManager.Instance.SpendPoints(ResourceManager.Instance.GetTowerCost()))
+                    {
+                        GameObject newTower = Instantiate(towerPrefab, hit.point, Quaternion.identity);
+                        newTower.tag = "Tower";
+
+                        Debug.Log("Tower placement at " + hit.point);
+                        CancelPlacementMode();
+                    }
                 }
                 else
                 {
