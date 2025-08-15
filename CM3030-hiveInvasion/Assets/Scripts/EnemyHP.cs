@@ -13,7 +13,7 @@ public class EnemyHP : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-        Debug.Log($"Enemy took {damage}, current health is {currentHealth}/{maxHealth}");
+        //Debug.Log($"Enemy took {damage}, current health is {currentHealth}/{maxHealth}");
 
         if (currentHealth <= 0)
         {
@@ -23,7 +23,7 @@ public class EnemyHP : MonoBehaviour
 
     void Die()
     {
-        Debug.Log("Enemy obliterated.");
+        //Debug.Log("Enemy obliterated.");
         Destroy(gameObject);
     }
 }

@@ -72,7 +72,8 @@ public class TowerPlacementManager : MonoBehaviour
         // check if we can afford a tower 
         if (!ResourceManager.Instance.CanAfford(ResourceManager.Instance.GetTowerCost()))
         {
-            Debug.Log($"Can't afford tower! You need {ResourceManager.Instance.GetTowerCost()} points. You have {ResourceManager.Instance.GetCurrentPoints()}");
+            Debug.Log($"Can't afford tower! You need {ResourceManager.Instance.GetTowerCost()} points." +
+                      $" You have {ResourceManager.Instance.GetCurrentPoints()}");
             return;
         }
         
@@ -88,8 +89,7 @@ public class TowerPlacementManager : MonoBehaviour
                     // deduct points before placing tower
                     if (ResourceManager.Instance.SpendPoints(ResourceManager.Instance.GetTowerCost()))
                     {
-                        GameObject newTower = Instantiate(towerPrefab, hit.point, Quaternion.identity);
-                        newTower.tag = "Tower";
+                        GameObject newTower = TowerManager.Instance.RegisterTower(towerPrefab, hit.point);
 
                         Debug.Log("Tower placement at " + hit.point);
                         CancelPlacementMode();

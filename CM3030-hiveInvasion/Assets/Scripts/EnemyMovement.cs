@@ -57,7 +57,7 @@ public class EnemyMovement : MonoBehaviour
             {
                 gateHealth.TakeDamage(attackDamage);
                 lastAttackTime = Time.time;
-                Debug.Log("Enemy attacking gate!");
+                //Debug.Log("Enemy attacking gate!");
             }
             else
             {
