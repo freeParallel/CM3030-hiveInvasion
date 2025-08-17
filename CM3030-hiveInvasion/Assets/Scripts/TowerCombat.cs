@@ -38,9 +38,33 @@ public class TowerCombat : MonoBehaviour
             EnemyHP enemyHP = enemy.GetComponent<EnemyHP>();
             if (enemyHP != null)
             {
-                enemyHP.TakeDamage(damage);   
+                enemyHP.TakeDamage(damage);
+            
+                // VISUAL FEEDBACK
+                ShowMuzzleFlash();
             }
+        
             lastShotTime = Time.time;
         }
+    }
+
+    void ShowMuzzleFlash()
+    {
+        Renderer towerRenderer = GetComponent<Renderer>();
+        if (towerRenderer != null)
+        {
+            StartCoroutine(FlashColor(Color.yellow, 0.1f));
+        }
+
+    }
+
+    System.Collections.IEnumerator FlashColor(Color flashColor, float duration)
+    {
+        Renderer towerRenderer = GetComponent<Renderer>();
+        Color originalColor = towerRenderer.material.color;
+    
+        towerRenderer.material.color = flashColor;
+        yield return new WaitForSeconds(duration);
+        towerRenderer.material.color = originalColor;
     }
 }

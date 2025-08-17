@@ -592,63 +592,6 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 1
---- !u!1001 &444106028
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 2731368047730148456, guid: de5e4c808cc9d4c9ab01ebd43b393aa8, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -14.842944
-      objectReference: {fileID: 0}
-    - target: {fileID: 2731368047730148456, guid: de5e4c808cc9d4c9ab01ebd43b393aa8, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.299998
-      objectReference: {fileID: 0}
-    - target: {fileID: 2731368047730148456, guid: de5e4c808cc9d4c9ab01ebd43b393aa8, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -40.27311
-      objectReference: {fileID: 0}
-    - target: {fileID: 2731368047730148456, guid: de5e4c808cc9d4c9ab01ebd43b393aa8, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2731368047730148456, guid: de5e4c808cc9d4c9ab01ebd43b393aa8, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2731368047730148456, guid: de5e4c808cc9d4c9ab01ebd43b393aa8, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2731368047730148456, guid: de5e4c808cc9d4c9ab01ebd43b393aa8, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2731368047730148456, guid: de5e4c808cc9d4c9ab01ebd43b393aa8, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2731368047730148456, guid: de5e4c808cc9d4c9ab01ebd43b393aa8, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2731368047730148456, guid: de5e4c808cc9d4c9ab01ebd43b393aa8, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9105105068631882139, guid: de5e4c808cc9d4c9ab01ebd43b393aa8, type: 3}
-      propertyPath: m_Name
-      value: ArmoredEnemy
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: de5e4c808cc9d4c9ab01ebd43b393aa8, type: 3}
 --- !u!1 &485886381
 GameObject:
   m_ObjectHideFlags: 0
@@ -2887,4 +2830,3 @@ SceneRoots:
   - {fileID: 228525989}
   - {fileID: 1517217462}
   - {fileID: 1376297719}
-  - {fileID: 444106028}
