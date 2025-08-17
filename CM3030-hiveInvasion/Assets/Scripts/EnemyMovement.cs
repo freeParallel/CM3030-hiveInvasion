@@ -61,9 +61,20 @@ public class EnemyMovement : MonoBehaviour
             }
             else
             {
-                // swtich attack to player base. Implementation of HP to come
-                Debug.Log("Go for base!");
-                lastAttackTime = Time.time;
+                // attack BASE
+                BaseHealth baseHealth = target.GetComponent<BaseHealth>();
+                if (baseHealth != null)
+                {
+                    baseHealth.TakeDamage(attackDamage);
+                    lastAttackTime = Time.time;
+                    Debug.Log($"Enemy attacking Base, {attackDamage} done.");
+                }
+                else
+                {
+                    // swtich attack to player base. Implementation of HP to come
+                    Debug.Log("No HP component found on target");
+                    lastAttackTime = Time.time;
+                }
             }
         }
     }
