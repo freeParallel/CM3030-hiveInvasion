@@ -5,7 +5,7 @@ public class EnemyMovement : MonoBehaviour
 {
     public Transform target;
     public Transform secondaryTarget;
-    public float attackRange = 2f;
+    public float attackRange = 4f;
     public int attackDamage = 10;
     public float attackSpeed = 1f;
     
