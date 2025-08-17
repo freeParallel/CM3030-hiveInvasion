@@ -4,6 +4,7 @@ public class EnemyHP : MonoBehaviour
 {
     public int maxHealth = 100;
     public int currentHealth;
+    public int pointReward = 10;
     
     void Start()
     {
@@ -23,6 +24,11 @@ public class EnemyHP : MonoBehaviour
 
     void Die()
     {
+        if (ResourceManager.Instance != null)
+        {
+            ResourceManager.Instance.AddPoints(pointReward);
+        }
+        
         //Debug.Log("Enemy obliterated.");
         Destroy(gameObject);
     }
