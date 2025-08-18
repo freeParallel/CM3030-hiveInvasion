@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 public class TowerSelectionManager : MonoBehaviour
 {
@@ -41,6 +42,12 @@ public class TowerSelectionManager : MonoBehaviour
 
     void TrySelectTower()
     {
+        // ignore clicks on UI
+        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+        
         Ray ray = playerCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
