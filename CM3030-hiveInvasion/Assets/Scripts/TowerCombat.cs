@@ -10,6 +10,13 @@ public class TowerCombat : MonoBehaviour
     
     void Update()
     {
+        // DEBUG: Show current effective range
+        TowerData towerData = GetComponent<TowerData>();
+        if (towerData != null && Input.GetKeyDown(KeyCode.R))
+        {
+            Debug.Log($"Tower range: {range * towerData.GetRangeMultiplier()} (base: {range}, multiplier: {towerData.GetRangeMultiplier()})");
+        }
+        
         GameObject enemy = FindEnemyInRange();
         if (enemy != null)
         {
@@ -19,6 +26,15 @@ public class TowerCombat : MonoBehaviour
 
     GameObject FindEnemyInRange()
     {
+        // get the tower data for upgrade multipliers
+        TowerData towerData = GetComponent<TowerData>();
+        float finalRange = range;
+
+        if (towerData != null)
+        {
+            finalRange = range * towerData.GetRangeMultiplier();
+        }
+        
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
         foreach (GameObject enemy in enemies)
         {
@@ -35,6 +51,15 @@ public class TowerCombat : MonoBehaviour
     {
         if (Time.time - lastShotTime > 1f / fireRate)
         {
+            // get tower data for update multipliers
+            TowerData towerData = GetComponent<TowerData>();
+            float finalDamage = damage;
+
+            if (towerData != null)
+            {
+                finalDamage = damage * towerData.GetDamageMultiplier();
+            }
+            
             EnemyHP enemyHP = enemy.GetComponent<EnemyHP>();
             if (enemyHP != null)
             {
