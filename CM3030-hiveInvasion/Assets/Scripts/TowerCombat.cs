@@ -15,6 +15,7 @@ public class TowerCombat : MonoBehaviour
         if (towerData != null && Input.GetKeyDown(KeyCode.R))
         {
             Debug.Log($"Tower range: {range * towerData.GetRangeMultiplier()} (base: {range}, multiplier: {towerData.GetRangeMultiplier()})");
+            Debug.Log($"Tower damage: {damage * towerData.GetRangeMultiplier()} (base: {damage}, multiplier: {towerData.GetDamageMultiplier()})");
         }
         
         GameObject enemy = FindEnemyInRange();

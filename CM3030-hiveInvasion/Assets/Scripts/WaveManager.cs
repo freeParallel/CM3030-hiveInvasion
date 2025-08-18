@@ -70,6 +70,6 @@ public class WaveManager : MonoBehaviour
             enemyMovement.secondaryTarget = playerBase;
         }
         
-        Debug.Log($"Spawned: {enemyToSpawn.name}");
+        // Debug.Log($"Spawned: {enemyToSpawn.name}");
     }
 }

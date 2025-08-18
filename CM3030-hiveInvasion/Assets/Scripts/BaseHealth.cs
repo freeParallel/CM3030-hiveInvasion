@@ -34,7 +34,7 @@ public class BaseHealth : MonoBehaviour
         currentHealth -= damage;
         currentHealth = Mathf.Max(0, currentHealth); // prevent negative HP values
         
-        Debug.Log($"Base took {damage} damage. Health: {currentHealth}/{maxHealth}");
+        // Debug.Log($"Base took {damage} damage. Health: {currentHealth}/{maxHealth}");
         
         // update health bar
         HealthBar healthBar = GetComponent<HealthBar>();

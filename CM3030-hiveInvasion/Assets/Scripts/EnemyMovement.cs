@@ -67,7 +67,7 @@ public class EnemyMovement : MonoBehaviour
                 {
                     baseHealth.TakeDamage(attackDamage);
                     lastAttackTime = Time.time;
-                    Debug.Log($"Enemy attacking Base, {attackDamage} done.");
+                    // Debug.Log($"Enemy attacking Base, {attackDamage} done.");
                 }
                 else
                 {
