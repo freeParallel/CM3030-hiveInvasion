@@ -15,7 +15,7 @@ public class TowerCombat : MonoBehaviour
         if (towerData != null && Input.GetKeyDown(KeyCode.R))
         {
             Debug.Log($"Tower range: {range * towerData.GetRangeMultiplier()} (base: {range}, multiplier: {towerData.GetRangeMultiplier()})");
-            Debug.Log($"Tower damage: {damage * towerData.GetRangeMultiplier()} (base: {damage}, multiplier: {towerData.GetDamageMultiplier()})");
+            Debug.Log($"Tower damage: {damage * towerData.GetDamageMultiplier()} (base: {damage}, multiplier: {towerData.GetDamageMultiplier()})");
         }
         
         GameObject enemy = FindEnemyInRange();
@@ -40,7 +40,7 @@ public class TowerCombat : MonoBehaviour
         foreach (GameObject enemy in enemies)
         {
             float distance = Vector3.Distance(transform.position, enemy.transform.position);
-            if (distance <= range)
+            if (distance <= finalRange)
             {
                 return enemy;
             }
@@ -64,7 +64,7 @@ public class TowerCombat : MonoBehaviour
             EnemyHP enemyHP = enemy.GetComponent<EnemyHP>();
             if (enemyHP != null)
             {
-                enemyHP.TakeDamage(damage);
+                enemyHP.TakeDamage(Mathf.RoundToInt(finalDamage));
             
                 // VISUAL FEEDBACK
                 ShowMuzzleFlash();
