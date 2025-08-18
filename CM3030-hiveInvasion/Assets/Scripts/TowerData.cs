@@ -36,7 +36,7 @@ public class TowerData : MonoBehaviour
     
     public void UpgradeRange()
     {
-        damageMultiplier += 0.3f; // +30% range per upgrade
+        rangeMultiplier += 0.3f; // +30% range per upgrade
         level++;
         Debug.Log($"Tower {towerID} damage increased by: {rangeMultiplier}");
     }

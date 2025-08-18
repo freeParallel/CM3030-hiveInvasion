@@ -67,6 +67,11 @@ public class TowerPlacementManager : MonoBehaviour
         Debug.Log("Tower placement cancelled");
     }
 
+    public bool IsInPlacementMode()
+    {
+        return placementMode;
+    }
+    
     void TryPlaceTower()
     {
         // check if we can afford a tower 
