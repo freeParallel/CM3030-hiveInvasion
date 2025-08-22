@@ -2587,6 +2587,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scoutEnemyPrefab: {fileID: 1638093909630606359, guid: 23c46d995d04f4d6eb35c08c3c88f779, type: 3}
   armoredEnemyPrefab: {fileID: 9105105068631882139, guid: de5e4c808cc9d4c9ab01ebd43b393aa8, type: 3}
+  rangedEnemyPrefab: {fileID: 1638093909630606359, guid: a324cb30848054891ac59cebfdd72bb7, type: 3}
+  swarmEnemyPrefab: {fileID: 1638093909630606359, guid: 7b5b67d85d4604c4c9c3420b6764909b, type: 3}
   spawnPoint: {fileID: 973302102}
   targetPoint: {fileID: 2131524835}
   enemiesPerWave: 3
@@ -2594,7 +2596,9 @@ MonoBehaviour:
   timeBetweenEnemies: 1
   totalWaves: 5
   playerBase: {fileID: 1564578347}
-  scoutPercentage: 0.7
+  scoutPercentage: 0.4
+  armoredPercentage: 0.2
+  rangedPercentage: 0.2
 --- !u!4 &1768692432
 Transform:
   m_ObjectHideFlags: 0
@@ -3294,6 +3298,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scoutEnemyPrefab: {fileID: 1638093909630606359, guid: 23c46d995d04f4d6eb35c08c3c88f779, type: 3}
   armoredEnemyPrefab: {fileID: 9105105068631882139, guid: de5e4c808cc9d4c9ab01ebd43b393aa8, type: 3}
+  rangedEnemyPrefab: {fileID: 1638093909630606359, guid: a324cb30848054891ac59cebfdd72bb7, type: 3}
+  swarmEnemyPrefab: {fileID: 1638093909630606359, guid: 7b5b67d85d4604c4c9c3420b6764909b, type: 3}
   spawnPoint: {fileID: 878932378}
   targetPoint: {fileID: 2131524835}
   enemiesPerWave: 3
@@ -3301,7 +3307,9 @@ MonoBehaviour:
   timeBetweenEnemies: 1
   totalWaves: 5
   playerBase: {fileID: 1564578347}
-  scoutPercentage: 0.7
+  scoutPercentage: 0.4
+  armoredPercentage: 0.2
+  rangedPercentage: 0.2
 --- !u!4 &2018505247
 Transform:
   m_ObjectHideFlags: 0

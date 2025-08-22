@@ -3,6 +3,14 @@ using UnityEngine.AI;
 
 public class EnemyMovement : MonoBehaviour
 {
+    [Header("Attack Type")]
+    public bool isRangedEnemy = false;
+    public float rangedAttackRange = 10f;
+    public GameObject projectilePrefab; // for later    
+    
+    [Header("Ranged Attack Settings")]
+    public float projectileSpeed = 5f;
+    
     public Transform target;
     public Transform secondaryTarget;
     public float attackRange = 4f;
@@ -35,8 +43,11 @@ public class EnemyMovement : MonoBehaviour
         if (target == null) return;
 
         float distanceToTarget = Vector3.Distance(transform.position, target.position);
+        
+        // check enemy type for stop distance
+        float effectiveAttackRange = isRangedEnemy ? rangedAttackRange : attackRange;
 
-        if (distanceToTarget <= attackRange)
+        if (distanceToTarget <= effectiveAttackRange)
         {
             agent.isStopped = true;
             AttackTarget();
@@ -50,30 +61,38 @@ public class EnemyMovement : MonoBehaviour
 
     void AttackTarget()
     {
-        if (Time.time - lastAttackTime >= attackSpeed)
+        if (isRangedEnemy)
         {
-            GateHealth gateHealth = target.GetComponent<GateHealth>();
-            if (gateHealth != null)
+            FireProjectile();
+        }
+        else
+        {
+            // Melee attack code (for regular enemies)
+            if (Time.time - lastAttackTime >= attackSpeed)
             {
-                gateHealth.TakeDamage(attackDamage);
-                lastAttackTime = Time.time;
-                //Debug.Log("Enemy attacking gate!");
-            }
-            else
-            {
-                // attack BASE
-                BaseHealth baseHealth = target.GetComponent<BaseHealth>();
-                if (baseHealth != null)
+                GateHealth gateHealth = target.GetComponent<GateHealth>();
+                if (gateHealth != null)
                 {
-                    baseHealth.TakeDamage(attackDamage);
+                    gateHealth.TakeDamage(attackDamage);
                     lastAttackTime = Time.time;
-                    // Debug.Log($"Enemy attacking Base, {attackDamage} done.");
+                    //Debug.Log("Enemy attacking gate!");
                 }
                 else
                 {
-                    // swtich attack to player base. Implementation of HP to come
-                    Debug.Log("No HP component found on target");
-                    lastAttackTime = Time.time;
+                    // attack BASE
+                    BaseHealth baseHealth = target.GetComponent<BaseHealth>();
+                    if (baseHealth != null)
+                    {
+                        baseHealth.TakeDamage(attackDamage);
+                        lastAttackTime = Time.time;
+                        Debug.Log($"Enemy attacking Base, {attackDamage} done.");
+                    }
+                    else
+                    {
+                        // switch attack to player base
+                        Debug.Log("No HP component found on target");
+                        lastAttackTime = Time.time;
+                    }
                 }
             }
         }
@@ -88,6 +107,26 @@ public class EnemyMovement : MonoBehaviour
             agent.SetDestination(target.position);
             gateDestroyed = true;
             Debug.Log("EVENT RECEIVED, enemy swithching attack to player base");
+        }
+    }
+
+    void FireProjectile()
+    {
+        if (Time.time - lastAttackTime >= attackSpeed)
+        {
+            // projectile implementation will be here
+            if (isRangedEnemy)
+            {
+                // range attack
+                BaseHealth baseHealth = target.GetComponent<BaseHealth>();
+                if (baseHealth != null)
+                {
+                    baseHealth.TakeDamage(attackDamage);
+                    Debug.Log(($"Ranged enemy fired! Dealt {attackDamage} dmg"));
+                }
+            }
+            
+            lastAttackTime = Time.time;
         }
     }
 }
