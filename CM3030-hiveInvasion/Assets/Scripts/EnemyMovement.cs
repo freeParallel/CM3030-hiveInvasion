@@ -3,34 +3,45 @@ using UnityEngine.AI;
 
 public class EnemyMovement : MonoBehaviour
 {
+    [Header("Navigation Targets (auto-acquired)")]
+    private GameObject gateObject;
+    private GameObject baseObject;
+    private Transform currentTarget;
+
     [Header("Attack Type")]
     public bool isRangedEnemy = false;
     public float rangedAttackRange = 10f;
-    public GameObject projectilePrefab; // for later    
-    
+    public GameObject projectilePrefab; // reserved for future ranged behavior
+
     [Header("Ranged Attack Settings")]
     public float projectileSpeed = 5f;
-    
-    public Transform target;
-    public Transform secondaryTarget;
-    public float attackRange = 4f;
+
+    [Header("Melee Attack Settings")]
+    public float meleeAttackRange = 4f;
     public int attackDamage = 10;
     public float attackSpeed = 1f;
-    
-    NavMeshAgent agent;
-    float lastAttackTime;
-    private bool gateDestroyed = false;
-    
+
+    private NavMeshAgent agent;
+    private float lastAttackTime;
+
+    private enum TargetPriority { Gate, Base }
+    private TargetPriority currentPriority = TargetPriority.Gate;
+
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        if (target != null)
-        {
-            agent.SetDestination(target.position);
-        }
-        
-        // subscribe to Gate Destroyed event
+
+        // Prefer tags; fall back to common names. Assign tags in Unity for best reliability.
+        var gateGO = SafeFindByTagOrName("Gate", "Gate");
+        var baseGO = SafeFindByTagOrNames("Base", new string[] { "PlayerBase", "PlayerTower" });
+        gateObject = gateGO;
+        baseObject = baseGO;
+
+        // Subscribe to gate destruction
         GateHealth.OnGateDestroyed.AddListener(OnGateDestroyed);
+
+        // Initial target
+        AcquireTarget();
     }
 
     void OnDestroy()
@@ -40,93 +51,151 @@ public class EnemyMovement : MonoBehaviour
 
     void Update()
     {
-        if (target == null) return;
+        // Ensure target is valid; try to reacquire if not
+        if (!HasValidTarget())
+        {
+            AcquireTarget();
+            if (!HasValidTarget())
+            {
+                // Nothing to do this frame
+                return;
+            }
+        }
 
-        float distanceToTarget = Vector3.Distance(transform.position, target.position);
-        
-        // check enemy type for stop distance
-        float effectiveAttackRange = isRangedEnemy ? rangedAttackRange : attackRange;
+        float distanceToTarget = Vector3.Distance(transform.position, currentTarget.position);
+        float effectiveRange = isRangedEnemy ? rangedAttackRange : meleeAttackRange;
 
-        if (distanceToTarget <= effectiveAttackRange)
+        if (distanceToTarget <= effectiveRange)
         {
             agent.isStopped = true;
-            AttackTarget();
+            AttackCurrentTarget();
         }
         else
         {
             agent.isStopped = false;
-            agent.SetDestination(target.position);
+            if (agent.destination != currentTarget.position)
+            {
+                agent.SetDestination(currentTarget.position);
+            }
         }
     }
 
-    void AttackTarget()
+    private bool HasValidTarget()
     {
+        return currentTarget != null && currentTarget.gameObject != null;
+    }
+
+    private void AcquireTarget()
+    {
+        // Refresh cached references in case scene objects were created/renamed after Start
+        if (gateObject == null)
+            gateObject = SafeFindByTagOrName("Gate", "Gate");
+        if (baseObject == null)
+            baseObject = SafeFindByTagOrNames("Base", new string[] { "PlayerBase", "PlayerTower" });
+
+        switch (currentPriority)
+        {
+            case TargetPriority.Gate:
+                if (gateObject != null)
+                {
+                    currentTarget = gateObject.transform;
+                    if (agent != null && currentTarget != null)
+                    {
+                        agent.SetDestination(currentTarget.position);
+                    }
+                    return;
+                }
+                // If gate gone, switch to base
+                currentPriority = TargetPriority.Base;
+                goto case TargetPriority.Base;
+
+            case TargetPriority.Base:
+                if (baseObject != null)
+                {
+                    currentTarget = baseObject.transform;
+                    if (agent != null && currentTarget != null)
+                    {
+                        agent.SetDestination(currentTarget.position);
+                    }
+                    return;
+                }
+                // No valid targets found
+                currentTarget = null;
+                break;
+        }
+    }
+
+    private void OnGateDestroyed()
+    {
+        // Clear gate reference and switch priority to base
+        gateObject = null;
+        currentPriority = TargetPriority.Base;
+        currentTarget = null; // force reacquire
+        AcquireTarget();
+    }
+
+    private void AttackCurrentTarget()
+    {
+        if (Time.time - lastAttackTime < attackSpeed) return;
+
         if (isRangedEnemy)
         {
-            FireProjectile();
+            // Placeholder for projectile logic; directly apply damage for now
+            TryDamageTarget();
         }
         else
         {
-            // Melee attack code (for regular enemies)
-            if (Time.time - lastAttackTime >= attackSpeed)
-            {
-                GateHealth gateHealth = target.GetComponent<GateHealth>();
-                if (gateHealth != null)
-                {
-                    gateHealth.TakeDamage(attackDamage);
-                    lastAttackTime = Time.time;
-                    //Debug.Log("Enemy attacking gate!");
-                }
-                else
-                {
-                    // attack BASE
-                    BaseHealth baseHealth = target.GetComponent<BaseHealth>();
-                    if (baseHealth != null)
-                    {
-                        baseHealth.TakeDamage(attackDamage);
-                        lastAttackTime = Time.time;
-                        Debug.Log($"Enemy attacking Base, {attackDamage} done.");
-                    }
-                    else
-                    {
-                        // switch attack to player base
-                        Debug.Log("No HP component found on target");
-                        lastAttackTime = Time.time;
-                    }
-                }
-            }
+            // Melee damage application
+            TryDamageTarget();
         }
+
+        lastAttackTime = Time.time;
     }
 
-    // Event handler, called when gate is destroyed
-    void OnGateDestroyed()
+    private void TryDamageTarget()
     {
-        if (secondaryTarget != null && !gateDestroyed)
+        if (currentTarget == null) return;
+
+        var gateHealth = currentTarget.GetComponent<GateHealth>();
+        if (gateHealth != null)
         {
-            target = secondaryTarget;
-            agent.SetDestination(target.position);
-            gateDestroyed = true;
-            Debug.Log("EVENT RECEIVED, enemy swithching attack to player base");
+            gateHealth.TakeDamage(attackDamage);
+            return;
         }
+
+        var baseHealth = currentTarget.GetComponent<BaseHealth>();
+        if (baseHealth != null)
+        {
+            baseHealth.TakeDamage(attackDamage);
+            return;
+        }
+
+        // Target has no recognized health; reacquire
+        AcquireTarget();
     }
 
-    void FireProjectile()
+    // Safe find helpers: using tags if they exist; falling back to names to avoid exceptions
+    private GameObject TryFindWithTag(string tag)
     {
-        if (Time.time - lastAttackTime >= attackSpeed)
+        try { return GameObject.FindWithTag(tag); } catch { return null; }
+    }
+
+    private GameObject SafeFindByTagOrName(string tag, string name)
+    {
+        var go = TryFindWithTag(tag);
+        if (go != null) return go;
+        return GameObject.Find(name);
+    }
+
+    private GameObject SafeFindByTagOrNames(string tag, string[] names)
+    {
+        var go = TryFindWithTag(tag);
+        if (go != null) return go;
+        foreach (var n in names)
         {
-            // projectile implementation will be here
-            if (isRangedEnemy)
-            {
-                // range attack
-                BaseHealth baseHealth = target.GetComponent<BaseHealth>();
-                if (baseHealth != null)
-                {
-                    baseHealth.TakeDamage(attackDamage);
-                    Debug.Log(($"Ranged enemy fired! Dealt {attackDamage} dmg"));
-                }
-            }
-            
-            lastAttackTime = Time.time;
+            go = GameObject.Find(n);
+            if (go != null) return go;
         }
+        return null;
     }
 }

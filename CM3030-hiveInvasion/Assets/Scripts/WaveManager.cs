@@ -47,7 +47,7 @@ public class WaveManager : MonoBehaviour
     {
         var waves = new[]
         {
-            new { wave = 1,  count = 3,  scout = 1.0f,  armored = 0.0f,  ranged = 0.0f,  swarm = 0.0f },  // Pure scouts
+            new { wave = 1,  count = 3,  scout = 0.0f,  armored = 0.0f,  ranged = 0.0f,  swarm = 1.0f },  // Pure scouts
             new { wave = 2,  count = 4,  scout = 0.7f,  armored = 0.3f,  ranged = 0.0f,  swarm = 0.0f },  // Introduce armored
             new { wave = 3,  count = 5,  scout = 0.5f,  armored = 0.5f,  ranged = 0.0f,  swarm = 0.0f },  // Tank strategy
             new { wave = 4,  count = 6,  scout = 0.4f,  armored = 0.4f,  ranged = 0.2f,  swarm = 0.0f },  // Introduce ranged
@@ -143,13 +143,7 @@ public class WaveManager : MonoBehaviour
     void SpawnSingleEnemy(GameObject enemyPrefab, string enemyType)
     {
         GameObject enemy = Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
-        EnemyMovement enemyMovement = enemy.GetComponent<EnemyMovement>();
-        if (enemyMovement != null)
-        {
-            enemyMovement.target = targetPoint;
-            enemyMovement.secondaryTarget = playerBase;
-        }
-
+        // EnemyMovement now auto-acquires targets on Start()
         Debug.Log($"Spawned {enemyType} from {enemyPrefab.name}");
     }
 
@@ -165,12 +159,7 @@ public class WaveManager : MonoBehaviour
             );
 
             GameObject enemy = Instantiate(swarmEnemyPrefab, spawnPosition, Quaternion.identity);
-            EnemyMovement enemyMovement = enemy.GetComponent<EnemyMovement>();
-            if (enemyMovement != null)
-            {
-                enemyMovement.target = targetPoint;
-                enemyMovement.secondaryTarget = playerBase;
-            }
+            // EnemyMovement now auto-acquires targets on Start()
         }
 
         Debug.Log($"Spawned: SWARM group of {swarmSize} enemies!");

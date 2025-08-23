@@ -2219,7 +2219,7 @@ GameObject:
   - component: {fileID: 1564578350}
   m_Layer: 0
   m_Name: PlayerTower
-  m_TagString: Untagged
+  m_TagString: Base
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2662,14 +2662,9 @@ MonoBehaviour:
     isBossWave: 0
   spawnPoint: {fileID: 973302102}
   targetPoint: {fileID: 2131524835}
-  enemiesPerWave: 20
+  playerBase: {fileID: 1564578347}
   timeBetweenWaves: 5
   timeBetweenEnemies: 1
-  totalWaves: 10
-  playerBase: {fileID: 1564578347}
-  scoutPercentage: 0.4
-  armoredPercentage: 0.2
-  rangedPercentage: 0.2
 --- !u!4 &1768692432
 Transform:
   m_ObjectHideFlags: 0
@@ -3444,14 +3439,9 @@ MonoBehaviour:
     isBossWave: 0
   spawnPoint: {fileID: 878932378}
   targetPoint: {fileID: 2131524835}
-  enemiesPerWave: 20
+  playerBase: {fileID: 1564578347}
   timeBetweenWaves: 5
   timeBetweenEnemies: 1
-  totalWaves: 10
-  playerBase: {fileID: 1564578347}
-  scoutPercentage: 0.4
-  armoredPercentage: 0.2
-  rangedPercentage: 0.2
 --- !u!4 &2018505247
 Transform:
   m_ObjectHideFlags: 0
@@ -3483,7 +3473,7 @@ GameObject:
   - component: {fileID: 2131524837}
   m_Layer: 0
   m_Name: Gate
-  m_TagString: Untagged
+  m_TagString: Gate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
