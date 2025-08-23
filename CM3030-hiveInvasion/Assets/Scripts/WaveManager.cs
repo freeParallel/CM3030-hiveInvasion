@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.Events;
 
 // wave progression management 
 [System.Serializable]
@@ -16,6 +18,9 @@ public class WaveData
 
 public class WaveManager : MonoBehaviour
 {
+    // Wave lifecycle events for UI and systems
+    public static UnityEvent<int> OnWaveStarted = new UnityEvent<int>();
+    public static UnityEvent<int> OnWaveCompleted = new UnityEvent<int>();
     [Header("Enemy Types")] 
     public GameObject scoutEnemyPrefab;
     public GameObject armoredEnemyPrefab;
@@ -33,6 +38,10 @@ public class WaveManager : MonoBehaviour
     [Header("Wave Timing")] 
     public float timeBetweenWaves = 5f;
     public float timeBetweenEnemies = 1f;
+
+    [Header("Start Offset")]
+    [Tooltip("Initial delay before this WaveManager starts spawning waves. Use to offset multiple managers.")]
+    public float initialStartDelay = 0f;
 
     private int currentWave = 0;
     private bool waveInProgress = false;
@@ -79,12 +88,20 @@ public class WaveManager : MonoBehaviour
     
     IEnumerator StartWaveSequence()
     {
+        // Optional offset for multi-Manager setups
+        if (initialStartDelay > 0f)
+        {
+            yield return new WaitForSeconds(initialStartDelay);
+        }
+
         while (currentWave < waveProgression.Length)  // Use array length instead of totalWaves
         {
             currentWave++;
             Debug.Log($"Starting Wave {currentWave}");
+            OnWaveStarted.Invoke(currentWave);
 
             yield return StartCoroutine(SpawnWave());
+            OnWaveCompleted.Invoke(currentWave);
             yield return new WaitForSeconds(timeBetweenWaves);
         }
 
@@ -98,47 +115,71 @@ public class WaveManager : MonoBehaviour
         // get wave data. currentWave is 1 based and array is 0 based.
         WaveData currentWaveData = waveProgression[currentWave - 1];
         
-        Debug.Log($"Wave {currentWave}: Spawning {currentWaveData.enemyCount} enemies");
+        // Build deterministic exact composition for this wave (with grouped swarms)
+        List<SpawnItem> composition = BuildWaveComposition(currentWaveData);
+        int totalToSpawn = 0;
+        foreach (var item in composition) totalToSpawn += Mathf.Max(1, item.count);
+        Debug.Log($"Wave {currentWave}: Spawning exactly {totalToSpawn} enemies (deterministic composition with groups)");
 
-        for (int i = 0; i < currentWaveData.enemyCount; i++)  // Use progression data
+        foreach (var item in composition)
         {
-            SpawnEnemyFromProgression(currentWaveData);
+            if (item.count <= 1 || item.prefab != swarmEnemyPrefab)
+            {
+                // Single spawn
+                SpawnSingleEnemy(item.prefab, item.prefab != null ? item.prefab.name : "UNKNOWN");
+            }
+            else
+            {
+                // Grouped swarm spawn: spawn 'count' enemies at once with slight offsets
+                int swarmSize = item.count;
+                for (int i = 0; i < swarmSize; i++)
+                {
+                    Vector3 spawnPosition = spawnPoint.position + new Vector3(
+                        Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)
+                    );
+                    Instantiate(item.prefab, spawnPosition, Quaternion.identity);
+                }
+                Debug.Log($"Spawned: SWARM group of {swarmSize} enemies!");
+            }
+
             yield return new WaitForSeconds(timeBetweenEnemies);
         }
 
         waveInProgress = false;
     }
 
-    void SpawnEnemyFromProgression(WaveData waveData)
-    {
-        GameObject enemyToSpawn;
-        string enemyType;
-        float random = Random.value;
-
-        if (random < waveData.scoutPercentage)
-        {
-            enemyToSpawn = scoutEnemyPrefab;
-            enemyType = "SCOUT";
-            SpawnSingleEnemy(enemyToSpawn, enemyType);
-        }
-        else if (random < waveData.scoutPercentage + waveData.armoredPercentage)
-        {
-            enemyToSpawn = armoredEnemyPrefab;
-            enemyType = "ARMORED";
-            SpawnSingleEnemy(enemyToSpawn, enemyType);
-        }
-        else if (random < waveData.scoutPercentage + waveData.armoredPercentage + waveData.rangedPercentage)
-        {
-            enemyToSpawn = rangedEnemyPrefab;
-            enemyType = "RANGED";
-            SpawnSingleEnemy(enemyToSpawn, enemyType);
-        }
-        else
-        {
-            // SWARM spawns multiple
-            SpawnSwarmGroup();
-        }
-    }
+    // Deprecated: Legacy per-draw random composition. Unused; kept for reference now that
+    // deterministic BuildWaveComposition is used for exact per-wave totals and ordering.
+    // void SpawnEnemyFromProgression(WaveData waveData)
+    // {
+    //     GameObject enemyToSpawn;
+    //     string enemyType;
+    //     float random = Random.value;
+    //
+    //     if (random < waveData.scoutPercentage)
+    //     {
+    //         enemyToSpawn = scoutEnemyPrefab;
+    //         enemyType = "SCOUT";
+    //         SpawnSingleEnemy(enemyToSpawn, enemyType);
+    //     }
+    //     else if (random < waveData.scoutPercentage + waveData.armoredPercentage)
+    //     {
+    //         enemyToSpawn = armoredEnemyPrefab;
+    //         enemyType = "ARMORED";
+    //         SpawnSingleEnemy(enemyToSpawn, enemyType);
+    //     }
+    //     else if (random < waveData.scoutPercentage + waveData.armoredPercentage + waveData.rangedPercentage)
+    //     {
+    //         enemyToSpawn = rangedEnemyPrefab;
+    //         enemyType = "RANGED";
+    //         SpawnSingleEnemy(enemyToSpawn, enemyType);
+    //     }
+    //     else
+    //     {
+    //         // SWARM spawns multiple
+    //         SpawnSwarmGroup();
+    //     }
+    // }
 
     void SpawnSingleEnemy(GameObject enemyPrefab, string enemyType)
     {
@@ -147,8 +188,134 @@ public class WaveManager : MonoBehaviour
         Debug.Log($"Spawned {enemyType} from {enemyPrefab.name}");
     }
 
+    // Deterministic wave composition with grouped swarms: allocate exact counts by percentages using largest remainder method
+    private class SpawnItem
+    {
+        public GameObject prefab;
+        public int count; // 1 for singles; >1 indicates grouped spawns (used for swarm)
+        public SpawnItem(GameObject prefab, int count)
+        {
+            this.prefab = prefab;
+            this.count = count;
+        }
+    }
+
+    List<SpawnItem> BuildWaveComposition(WaveData waveData)
+    {
+        int n = Mathf.Max(0, waveData.enemyCount);
+        var prefabs = new GameObject[] { scoutEnemyPrefab, armoredEnemyPrefab, rangedEnemyPrefab, swarmEnemyPrefab };
+        var weights = new float[] { 
+            Mathf.Max(0f, waveData.scoutPercentage),
+            Mathf.Max(0f, waveData.armoredPercentage),
+            Mathf.Max(0f, waveData.rangedPercentage),
+            Mathf.Max(0f, waveData.swarmPercentage)
+        };
+
+        // Normalize weights if they don't sum close to 1 to preserve ratios
+        float weightSum = weights[0] + weights[1] + weights[2] + weights[3];
+        if (weightSum > 0f)
+        {
+            for (int i = 0; i < weights.Length; i++) weights[i] /= weightSum;
+        }
+
+        int[] counts = new int[4];
+        float[] remainders = new float[4];
+        int allocated = 0;
+        for (int i = 0; i < 4; i++)
+        {
+            float exact = weights[i] * n;
+            int baseCount = Mathf.FloorToInt(exact);
+            counts[i] = baseCount;
+            remainders[i] = exact - baseCount;
+            allocated += baseCount;
+        }
+        int remaining = n - allocated;
+        // Distribute remaining by largest remainder
+        for (int r = 0; r < remaining; r++)
+        {
+            int bestIdx = 0;
+            float bestRem = remainders[0];
+            for (int i = 1; i < 4; i++)
+            {
+                if (remainders[i] > bestRem)
+                {
+                    bestRem = remainders[i];
+                    bestIdx = i;
+                }
+            }
+            counts[bestIdx]++;
+            // Reduce remainder to avoid picking same index always when equal
+            remainders[bestIdx] = -1f - r; 
+        }
+
+        // If all weights were zero, allocate all to first prefab as fallback
+        if (weightSum == 0f)
+        {
+            counts[0] = n;
+            counts[1] = counts[2] = counts[3] = 0;
+        }
+
+        var items = new List<SpawnItem>(n);
+
+        // Non-swarm singles
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < counts[i]; j++) items.Add(new SpawnItem(prefabs[i], 1));
+        }
+
+        // Swarm groups: partition the swarm enemy total into groups of 3-6 (last group may be smaller if needed)
+        int swarmTotal = counts[3];
+        if (swarmTotal > 0)
+        {
+            var groupSizes = PartitionSwarm(swarmTotal, 3, 6);
+            foreach (var g in groupSizes)
+            {
+                items.Add(new SpawnItem(swarmEnemyPrefab, g));
+            }
+        }
+
+        // Fisher–Yates shuffle at the instruction level
+        for (int i = items.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            var tmp = items[i];
+            items[i] = items[j];
+            items[j] = tmp;
+        }
+
+        Debug.Log($"Wave composition -> Scout:{counts[0]}, Armored:{counts[1]}, Ranged:{counts[2]}, Swarm:{counts[3]} (grouped)");
+        return items;
+    }
+
+    // Partition a total into groups roughly within [minSize, maxSize].
+    // Ensures exact sum; may produce a smaller last group if total < minSize.
+    List<int> PartitionSwarm(int total, int minSize, int maxSize)
+    {
+        var groups = new List<int>();
+        if (total <= 0) return groups;
+        if (total < minSize)
+        {
+            groups.Add(total);
+            return groups;
+        }
+        int remaining = total;
+        while (remaining > 0)
+        {
+            if (remaining <= maxSize)
+            {
+                groups.Add(remaining);
+                break;
+            }
+            int pick = Random.Range(minSize, maxSize + 1);
+            groups.Add(pick);
+            remaining -= pick;
+        }
+        return groups;
+    }
+
     void SpawnSwarmGroup()
     {
+        // Unused in deterministic composition (grouped swarms). Kept for reference.
         int swarmSize = Random.Range(3, 6);
 
         for (int i = 0; i < swarmSize; i++)
