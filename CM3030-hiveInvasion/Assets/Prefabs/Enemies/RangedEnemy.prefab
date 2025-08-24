@@ -147,13 +147,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 581d16426910645e99d3341e201f51d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isRangedEnemy: 0
-  rangedAttackRange: 10
+  isRangedEnemy: 1
+  rangedAttackRange: 20
   projectilePrefab: {fileID: 0}
   projectileSpeed: 5
-  target: {fileID: 0}
-  secondaryTarget: {fileID: 0}
-  attackRange: 20
+  meleeAttackRange: 4
   attackDamage: 10
   attackSpeed: 1
 --- !u!114 &2589410326288739670
