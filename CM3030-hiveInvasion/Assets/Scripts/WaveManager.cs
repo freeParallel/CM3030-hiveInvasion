@@ -38,6 +38,13 @@ public class WaveManager : MonoBehaviour
     [Header("Wave Timing")] 
     public float timeBetweenWaves = 5f;
     public float timeBetweenEnemies = 1f;
+    
+    // wave difficulty progression setup
+    [Header("Difficulty Scaling")]
+    [Tooltip("speed will increase by this % every 3 waves")]
+    public float speedScalePerStep = 0.05f;
+    [Tooltip("HP will increase by this % every 2 waves")]
+    public float healthScalePerStep = 0.10f;
 
     [Header("Start Offset")]
     // initial delay before this wavemanager starts spawning waves (offset multiple managers)
@@ -59,11 +66,11 @@ public class WaveManager : MonoBehaviour
     {
         var waves = new[]
         {
-            new { wave = 1,  count = 3,  scout = 0.0f,  armored = 0.0f,  ranged = 0.0f,  swarm = 1.0f },  // Pure scouts
+            new { wave = 1,  count = 3,  scout = 0.0f,  armored = 0.0f,  ranged = 0.0f,  swarm = 1.0f },  // Swarm team
             new { wave = 2,  count = 4,  scout = 0.7f,  armored = 0.3f,  ranged = 0.0f,  swarm = 0.0f },  // Introduce armored
             new { wave = 3,  count = 5,  scout = 0.5f,  armored = 0.5f,  ranged = 0.0f,  swarm = 0.0f },  // Tank strategy
             new { wave = 4,  count = 6,  scout = 0.4f,  armored = 0.4f,  ranged = 0.2f,  swarm = 0.0f },  // Introduce ranged
-            new { wave = 5,  count = 7,  scout = 0.3f,  armored = 0.3f,  ranged = 0.25f, swarm = 0.15f }, // Introduce swarms
+            new { wave = 5,  count = 7,  scout = 0.3f,  armored = 0.3f,  ranged = 0.25f, swarm = 0.15f }, // More swarms
             new { wave = 6,  count = 8,  scout = 0.25f, armored = 0.25f, ranged = 0.3f,  swarm = 0.2f },  // Full variety
             new { wave = 7,  count = 10, scout = 0.2f,  armored = 0.3f,  ranged = 0.25f, swarm = 0.25f }, // Balanced chaos
             new { wave = 8,  count = 12, scout = 0.15f, armored = 0.4f,  ranged = 0.25f, swarm = 0.2f },  // Tank heavy
@@ -89,6 +96,47 @@ public class WaveManager : MonoBehaviour
         Debug.Log($"Normal wave progression initialized - {waves.Length} waves loaded!");
     }
     
+    // calculate speed multiplier: +5% every 3 waves
+    float CalculateSpeedMultiplier(int waveNumber)
+    {
+        int speedSteps = (waveNumber - 1) / 3; // Wave 1-3: 0 steps, 4-6: 1 step, etc.
+        return 1.0f + (speedScalePerStep * speedSteps);
+    }
+
+    // calculate HP multiplier: +10% every 2 waves  
+    float CalculateHealthMultiplier(int waveNumber)
+    {
+        int healthSteps = (waveNumber - 1) / 2; // Wave 1-2: 0 steps, 3-4: 1 step, etc.
+        return 1.0f + (healthScalePerStep * healthSteps);
+    }
+    
+    void ApplyWaveScaling(GameObject enemy, int waveNumber)
+    {
+        // Calculate scaling multipliers
+        float speedMultiplier = CalculateSpeedMultiplier(waveNumber);
+        float healthMultiplier = CalculateHealthMultiplier(waveNumber);
+    
+        // Apply speed scaling to NavMeshAgent
+        var agent = enemy.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (agent != null)
+        {
+            float originalSpeed = agent.speed;
+            agent.speed = originalSpeed * speedMultiplier;
+        }
+    
+        // Apply health scaling to EnemyHealth
+        var health = enemy.GetComponent<EnemyHP>();
+        if (health != null)
+        {
+            int originalMaxHealth = health.maxHealth;
+            int scaledMaxHealth = Mathf.RoundToInt(originalMaxHealth * healthMultiplier);
+            health.maxHealth = scaledMaxHealth;
+            health.currentHealth = scaledMaxHealth; // Set current to max
+        }
+    
+        Debug.Log($"Applied scaling to {enemy.name} - Speed: {speedMultiplier:F2}x, Health: {healthMultiplier:F2}x");
+    }
+    
     IEnumerator StartWaveSequence()
     {
         // Optional offset for multi-Manager setups
@@ -97,10 +145,16 @@ public class WaveManager : MonoBehaviour
             yield return new WaitForSeconds(initialStartDelay);
         }
 
-        while (currentWave < waveProgression.Length)  // Use array length instead of totalWaves
+        while (currentWave < waveProgression.Length)
         {
             currentWave++;
-            Debug.Log($"Starting Wave {currentWave}");
+
+            // Calculate and log scaling for this wave
+            float speedMultiplier = CalculateSpeedMultiplier(currentWave);
+            float healthMultiplier = CalculateHealthMultiplier(currentWave);
+
+            Debug.Log($"Starting Wave {currentWave} - Speed: {speedMultiplier:F2}x, Health: {healthMultiplier:F2}x");
+
             if (emitAnnouncements)
                 OnWaveStarted.Invoke(currentWave);
 
@@ -142,8 +196,11 @@ public class WaveManager : MonoBehaviour
                     Vector3 spawnPosition = spawnPoint.position + new Vector3(
                         Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)
                     );
-                    Instantiate(item.prefab, spawnPosition, Quaternion.identity);
-                }
+                    GameObject enemy = Instantiate(item.prefab, spawnPosition, Quaternion.identity);
+    
+                    // Apply wave-based scaling to swarm enemy
+                    ApplyWaveScaling(enemy, currentWave);
+                }           
                 Debug.Log($"Spawned: SWARM group of {swarmSize} enemies!");
             }
 
@@ -189,8 +246,11 @@ public class WaveManager : MonoBehaviour
     void SpawnSingleEnemy(GameObject enemyPrefab, string enemyType)
     {
         GameObject enemy = Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
-        // EnemyMovement now auto-acquires targets on Start()
-        Debug.Log($"Spawned {enemyType} from {enemyPrefab.name}");
+    
+        // wave-based scaling to this enemy
+        ApplyWaveScaling(enemy, currentWave);
+    
+        Debug.Log($"Spawned scaled {enemyType} from {enemyPrefab.name}");
     }
 
     // Deterministic wave composition with grouped swarms: allocate exact counts by percentages using largest remainder method
