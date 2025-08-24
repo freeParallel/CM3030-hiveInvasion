@@ -151,11 +151,9 @@ MonoBehaviour:
   rangedAttackRange: 10
   projectilePrefab: {fileID: 0}
   projectileSpeed: 5
-  target: {fileID: 0}
-  secondaryTarget: {fileID: 0}
-  attackRange: 3
-  attackDamage: 10
-  attackSpeed: 1
+  meleeAttackRange: 4
+  attackDamage: 8
+  attackSpeed: 2
 --- !u!114 &2589410326288739670
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -168,6 +166,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a5af0580906b4775bf5bbe129439147, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 8
+  maxHealth: 20
   currentHealth: 0
   pointReward: 3
