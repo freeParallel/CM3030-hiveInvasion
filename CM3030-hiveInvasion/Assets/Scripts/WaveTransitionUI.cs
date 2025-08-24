@@ -15,7 +15,7 @@ public class WaveTransitionUI : MonoBehaviour
     public float fadeInDuration = 0.25f;
     public float holdDuration = 1.0f;
     public float fadeOutDuration = 0.35f;
-    [Tooltip("Suppress repeated messages for the same wave number within this interval (useful with multiple WaveManagers).")]
+    // suppress repeated messages for the same wave within this interval (useful with multiple wavemanagers)
     public float debounceSeconds = 1.0f;
 
     private Coroutine _displayRoutine;
