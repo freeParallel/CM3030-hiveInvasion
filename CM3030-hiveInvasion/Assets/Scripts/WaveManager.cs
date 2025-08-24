@@ -40,8 +40,11 @@ public class WaveManager : MonoBehaviour
     public float timeBetweenEnemies = 1f;
 
     [Header("Start Offset")]
-    [Tooltip("Initial delay before this WaveManager starts spawning waves. Use to offset multiple managers.")]
+    // initial delay before this wavemanager starts spawning waves (offset multiple managers)
     public float initialStartDelay = 0f;
+
+    // whether this manager emits wave start/complete announcements for ui
+    public bool emitAnnouncements = true;
 
     private int currentWave = 0;
     private bool waveInProgress = false;
@@ -98,10 +101,12 @@ public class WaveManager : MonoBehaviour
         {
             currentWave++;
             Debug.Log($"Starting Wave {currentWave}");
-            OnWaveStarted.Invoke(currentWave);
+            if (emitAnnouncements)
+                OnWaveStarted.Invoke(currentWave);
 
             yield return StartCoroutine(SpawnWave());
-            OnWaveCompleted.Invoke(currentWave);
+            if (emitAnnouncements)
+                OnWaveCompleted.Invoke(currentWave);
             yield return new WaitForSeconds(timeBetweenWaves);
         }
 

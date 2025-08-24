@@ -2726,6 +2726,7 @@ MonoBehaviour:
   timeBetweenWaves: 10
   timeBetweenEnemies: 1
   initialStartDelay: 0
+  emitAnnouncements: 1
 --- !u!4 &1768692432
 Transform:
   m_ObjectHideFlags: 0
@@ -3504,6 +3505,7 @@ MonoBehaviour:
   timeBetweenWaves: 10
   timeBetweenEnemies: 1
   initialStartDelay: 3
+  emitAnnouncements: 0
 --- !u!4 &2018505247
 Transform:
   m_ObjectHideFlags: 0
