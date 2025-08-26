@@ -8,6 +8,10 @@ public class TowerSelectionManager : MonoBehaviour
     public Material selectionMaterial;
     public Material defaultMaterial;
     
+    [Header("Range Indicator")]
+    public GameObject rangeIndicator;
+    private GameObject privateRangeIndicator;
+    
     private GameObject selectedTower;
     private Renderer selectedTowerRenderer;
     private Material originalMaterial;
@@ -37,6 +41,27 @@ public class TowerSelectionManager : MonoBehaviour
         if (Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             DeselectTower();
+        }
+        
+        // Update range indicator if tower is selected (to handle upgrades)
+        if (selectedTower != null && privateRangeIndicator != null)
+        {
+            // Check if we need to update the range circle
+            TowerCombat towerCombat = selectedTower.GetComponent<TowerCombat>();
+            TowerData towerData = selectedTower.GetComponent<TowerData>();
+        
+            if (towerCombat != null)
+            {
+                float currentEffectiveRange = towerCombat.range;
+                if (towerData != null)
+                {
+                    currentEffectiveRange = towerCombat.range * towerData.GetRangeMultiplier();
+                }
+            
+                // Simple way: recreate the circle every frame when tower is selected
+                // This ensures it's always accurate after upgrades
+                CreateRangeIndicator(selectedTower);
+            }
         }
     }
 
@@ -81,6 +106,8 @@ public class TowerSelectionManager : MonoBehaviour
             selectedTowerRenderer.material = selectionMaterial;
         }
         
+        CreateRangeIndicator(tower);
+        
         TowerData towerData = tower.GetComponent<TowerData>();
         if (towerData != null)
         {
@@ -107,15 +134,100 @@ public class TowerSelectionManager : MonoBehaviour
             selectedTower = null;
             selectedTowerRenderer = null;
             originalMaterial = null;
+            
+            // remove range circumference indicator
+            RemoveRangeIndicator();
 
             // notify UI that tower is no longer selected
             OnTowerDeselected?.Invoke();
         }
     }
 
+    // public method for other scripts fo check selected tower
     public GameObject GetSelectedTower()
     {
         return selectedTower;
     }
+
+    // check if a specific tower is selected
+    public bool IsTowerSelected(GameObject tower)
+    {
+        return selectedTower == tower;
+    }
+
+    void CreateRangeIndicator(GameObject tower)
+    {
+        // remove existing indicator
+        if (privateRangeIndicator != null)
+        {
+            Destroy(privateRangeIndicator);
+        }
     
+        // get tower range
+        TowerCombat towerCombat = tower.GetComponent<TowerCombat>();
+        TowerData towerData = tower.GetComponent<TowerData>();
+
+        if (towerCombat == null) return;
+    
+        // calculate range (Base range * multiplier)
+        float effectiveRange = towerCombat.range;
+        if (towerData != null)
+        {
+            effectiveRange = towerCombat.range * towerData.GetRangeMultiplier();
+        }
+    
+        // range indicator
+        privateRangeIndicator = CreateRangeCircle(tower.transform.position, effectiveRange);
+    }
+    
+    GameObject CreateRangeCircle(Vector3 center, float radius)
+    {
+        // Create empty GameObject for the circle
+        GameObject circleObj = new GameObject("RangeIndicator");
+        circleObj.transform.position = center;
+
+        // Add LineRenderer component
+        LineRenderer lineRenderer = circleObj.AddComponent<LineRenderer>();
+
+        // Configure LineRenderer for circle
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        lineRenderer.startColor = Color.white;  
+        lineRenderer.endColor = Color.white; 
+        lineRenderer.startWidth = 0.1f;
+        lineRenderer.endWidth = 0.1f;
+        lineRenderer.useWorldSpace = true;
+
+        // Create circle points
+        int segments = 64; // More segments = smoother circle
+        lineRenderer.positionCount = segments + 1;
+
+        for (int i = 0; i <= segments; i++)
+        {
+            float angle = i * Mathf.PI * 2f / segments;
+            float x = Mathf.Cos(angle) * radius;
+            float z = Mathf.Sin(angle) * radius;
+            Vector3 pos = center + new Vector3(x, 0.1f, z); // Slightly above ground
+            lineRenderer.SetPosition(i, pos);
+        }
+
+        return circleObj;
+    }
+
+    void RemoveRangeIndicator()
+    {
+        if (privateRangeIndicator != null)
+        {
+            Destroy(privateRangeIndicator);
+            privateRangeIndicator = null;
+        }
+    }
+    
+    void UpdateRangeIndicator()
+    {
+        if (selectedTower != null)
+        {
+            // Recreate the range indicator with updated range
+            CreateRangeIndicator(selectedTower);
+        }
+    }
 }
