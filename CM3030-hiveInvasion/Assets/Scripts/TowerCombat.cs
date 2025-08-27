@@ -7,6 +7,21 @@ public class TowerCombat : MonoBehaviour
     public float fireRate = 2f;
 
     private float lastShotTime = 0f;
+
+    [Header("Projectiles")]
+    public bool useProjectiles = true;
+    public ProjectileStyle projectileStyle = ProjectileStyle.MachineGun;
+    public Transform muzzleTransform; // optional; if null, uses this.transform
+    [Tooltip("If true and muzzleTransform is not set, spawn from the top of the tower's bounds")] public bool spawnFromTopIfNoMuzzle = true;
+    [Tooltip("Extra vertical offset above the computed top (in world units)")] public float topYOffset = 0.1f;
+    [Tooltip("Extra forward distance beyond tower radius toward target when spawning from top")] public float topForwardOffset = 0.2f;
+
+    [Tooltip("Machine gun projectile speed (units/s)")] public float machineGunSpeed = 50f;
+    [Tooltip("Cannon projectile speed (units/s)")] public float cannonSpeed = 25f;
+    [Tooltip("Machine gun projectile scale")] public float machineGunScale = 0.2f;
+    [Tooltip("Cannon projectile scale")] public float cannonScale = 0.35f;
+    [Tooltip("Machine gun projectile color")] public Color machineGunColor = Color.black;
+    [Tooltip("Cannon projectile color")] public Color cannonColor = Color.black;
     
     [Header("Manual Targeting")]
     public GameObject manualTarget;
@@ -116,14 +131,52 @@ public class TowerCombat : MonoBehaviour
             {
                 finalDamage = damage * towerData.GetDamageMultiplier();
             }
-            
-            EnemyHP enemyHP = enemy.GetComponent<EnemyHP>();
-            if (enemyHP != null)
+
+            if (useProjectiles)
             {
-                enemyHP.TakeDamage(Mathf.RoundToInt(finalDamage));
-            
+                // Spawn a projectile instead of instant hit
+                Color color;
+                float speed;
+                float scale;
+                if (projectileStyle == ProjectileStyle.MachineGun)
+                {
+                    color = machineGunColor;
+                    speed = machineGunSpeed;
+                    scale = machineGunScale;
+                }
+                else // Cannon
+                {
+                    color = cannonColor;
+                    speed = cannonSpeed;
+                    scale = cannonScale;
+                }
+
+                Vector3 spawnPos = GetProjectileSpawnPosition(enemy.transform);
+                GameObject projGO = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                projGO.name = projectileStyle == ProjectileStyle.MachineGun ? "MG_Bullet" : "Cannon_Shell";
+                projGO.transform.position = spawnPos;
+
+                var col = projGO.GetComponent<Collider>();
+                if (col != null) col.isTrigger = true; // ensure no initial physics bump
+
+                var renderer = projGO.GetComponent<Renderer>();
+                if (renderer != null) renderer.material.color = color;
+
+                var projectile = projGO.AddComponent<TowerProjectile>();
+                projectile.Initialize(enemy.transform, Mathf.RoundToInt(finalDamage), speed, color, scale);
+
                 // VISUAL FEEDBACK
                 ShowMuzzleFlash();
+            }
+            else
+            {
+                // Original instant hit behavior
+                EnemyHP enemyHP = enemy.GetComponent<EnemyHP>();
+                if (enemyHP != null)
+                {
+                    enemyHP.TakeDamage(Mathf.RoundToInt(finalDamage));
+                    ShowMuzzleFlash();
+                }
             }
         
             lastShotTime = Time.time;
@@ -280,10 +333,71 @@ public class TowerCombat : MonoBehaviour
         }
     }
 
+    Vector3 GetProjectileSpawnPosition(Transform target)
+    {
+        // If a muzzle is provided, trust it exactly (no forward push)
+        if (muzzleTransform != null)
+        {
+            return muzzleTransform.position;
+        }
+
+        // Compute the top center of the tower and push outward horizontally toward the target
+        if (spawnFromTopIfNoMuzzle)
+        {
+            // Try renderers first for accurate visual bounds
+            Renderer[] renderers = GetComponentsInChildren<Renderer>();
+            if (renderers != null && renderers.Length > 0)
+            {
+                Bounds b = renderers[0].bounds;
+                for (int i = 1; i < renderers.Length; i++)
+                {
+                    b.Encapsulate(renderers[i].bounds);
+                }
+                Vector3 topCenter = new Vector3(b.center.x, b.max.y + topYOffset, b.center.z);
+                Vector3 dirXZ = GetHorizontalDir(topCenter, target);
+                float radius = Mathf.Max(b.extents.x, b.extents.z);
+                return topCenter + dirXZ * (radius + Mathf.Max(0f, topForwardOffset));
+            }
+            // Fallback to collider bounds
+            Collider col = GetComponent<Collider>();
+            if (col != null)
+            {
+                Bounds b = col.bounds;
+                Vector3 topCenter = new Vector3(b.center.x, b.max.y + topYOffset, b.center.z);
+                Vector3 dirXZ = GetHorizontalDir(topCenter, target);
+                float radius = Mathf.Max(b.extents.x, b.extents.z);
+                return topCenter + dirXZ * (radius + Mathf.Max(0f, topForwardOffset));
+            }
+        }
+        // Final fallback: above transform, push toward target horizontally
+        Vector3 basePos = transform.position + Vector3.up * 1f;
+        Vector3 finalDirXZ = GetHorizontalDir(basePos, target);
+        return basePos + finalDirXZ * Mathf.Max(0f, topForwardOffset);
+    }
+
+    Vector3 GetHorizontalDir(Vector3 from, Transform target)
+    {
+        Vector3 dir = Vector3.forward;
+        if (target != null)
+        {
+            dir = (target.position - from);
+        }
+        // Zero out vertical component to avoid pushing up/down
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.0001f)
+        {
+            // Fallback to tower's forward projected on XZ
+            dir = transform.forward;
+            dir.y = 0f;
+        }
+        return dir.sqrMagnitude > 0 ? dir.normalized : Vector3.forward;
+    }
+
     bool IsSelected()
     {
         // Check if this tower is currently selected
         TowerSelectionManager selectionManager = FindObjectOfType<TowerSelectionManager>();
         return selectionManager != null && selectionManager.GetSelectedTower() == gameObject;
     }
+    public enum ProjectileStyle { MachineGun, Cannon }
 }
