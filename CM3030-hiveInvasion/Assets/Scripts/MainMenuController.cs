@@ -8,7 +8,7 @@ public class MainMenuController : MonoBehaviour
     [Header("Navigation")]
     public string gameplaySceneName = "SampleScene";
 
-    [Header("Overlay")] public float overlayAlpha = 0.85f;
+    [Header("Overlay")] public float overlayAlpha = 1f;
     public Color overlayColor = new Color(0f, 0f, 0f, 1f);
 
     void Start()
@@ -35,7 +35,7 @@ public class MainMenuController : MonoBehaviour
         GUI.Label(new Rect(0, h * 0.35f - 40, w, 80), "Hive Invasion", title);
 
         var hint = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 20, normal = { textColor = Color.white } };
-        GUI.Label(new Rect(0, h * 0.35f + 10, w, 30), "Press Enter to Play", hint);
+        GUI.Label(new Rect(0, h * 0.375f + 10, w, 30), "Press Enter to Play", hint);
 
         var btnStyle = new GUIStyle(GUI.skin.button) { fontSize = 20 };
         float bx = w * 0.5f - 150f;

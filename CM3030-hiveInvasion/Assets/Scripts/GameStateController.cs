@@ -121,23 +121,11 @@ public class GameStateController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            // Restore normal time before reloading
-            Time.timeScale = 1f;
-            Scene current = SceneManager.GetActiveScene();
-            SceneManager.LoadScene(current.buildIndex);
+            RestartScene();
         }
         if (Input.GetKeyDown(KeyCode.M))
         {
-            // Restore time and attempt to load main menu if available
-            Time.timeScale = 1f;
-            if (!string.IsNullOrEmpty(mainMenuSceneName) && IsSceneInBuild(mainMenuSceneName))
-            {
-                SceneManager.LoadScene(mainMenuSceneName);
-            }
-            else
-            {
-                Debug.LogWarning($"Main Menu scene '{mainMenuSceneName}' is not in Build Settings yet. Add it later.");
-            }
+            ReturnToMainMenu();
         }
     }
 
@@ -169,9 +157,36 @@ public class GameStateController : MonoBehaviour
         hint.normal.textColor = Color.white;
         GUI.Label(new Rect(0, r.y + 50, w, 30), "Press R to Restart", hint);
         GUI.Label(new Rect(0, r.y + 75, w, 30), "Press M for Main Menu", hint);
+
+        // Clickable buttons
+        var btnStyle = new GUIStyle(GUI.skin.button) { fontSize = 18 };
+        float bx = w * 0.5f - 150f;
+        float by = r.y + 120f;
+        if (GUI.Button(new Rect(bx, by, 300f, 40f), "Restart", btnStyle)) RestartScene();
+        if (GUI.Button(new Rect(bx, by + 50f, 300f, 40f), "Main Menu", btnStyle)) ReturnToMainMenu();
     }
 
     public bool IsGameOver => isGameOver;
+
+    void RestartScene()
+    {
+        Time.timeScale = 1f;
+        Scene current = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(current.buildIndex);
+    }
+
+    void ReturnToMainMenu()
+    {
+        Time.timeScale = 1f;
+        if (!string.IsNullOrEmpty(mainMenuSceneName) && IsSceneInBuild(mainMenuSceneName))
+        {
+            SceneManager.LoadScene(mainMenuSceneName);
+        }
+        else
+        {
+            Debug.LogWarning($"Main Menu scene '{mainMenuSceneName}' is not in Build Settings yet. Add it later.");
+        }
+    }
 
     // Utility: check if a scene name is present in Build Settings
     bool IsSceneInBuild(string sceneName)

@@ -351,6 +351,9 @@ MonoBehaviour:
   rangeUpgradeButton: {fileID: 328706986}
   baseDamageUpgradeCost: 50
   baseRangeUpgradeCost: 50
+  sfxSource: {fileID: 0}
+  upgradeClip: {fileID: 0}
+  sfxVolume: 1
 --- !u!1 &328706984
 GameObject:
   m_ObjectHideFlags: 0
@@ -1241,6 +1244,55 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 0, z: 0}
   m_TimeToStationary: 0.5
+--- !u!1 &709562907
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 709562909}
+  - component: {fileID: 709562908}
+  m_Layer: 0
+  m_Name: PauseManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &709562908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 709562907}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed0a1e2bf691f4862ba0f2ae1601ed54, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  allowPause: 1
+  mainMenuSceneName: MainMenu
+  overlayTargetAlpha: 0.55
+  overlayFadeSpeed: 2
+  overlayColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+--- !u!4 &709562909
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 709562907}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.1647011, y: 7.474453, z: -34.84183}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -2075,6 +2127,9 @@ MonoBehaviour:
   messageYOffset: -40
   winColor: {r: 0.1, g: 0.9, b: 0.2, a: 1}
   loseColor: {r: 0.95, g: 0.2, b: 0.2, a: 1}
+  overlayTargetAlpha: 0.6
+  overlayFadeSpeed: 1.5
+  mainMenuSceneName: MainMenu
 --- !u!4 &1403890264
 Transform:
   m_ObjectHideFlags: 0
@@ -2673,6 +2728,11 @@ MonoBehaviour:
   uiBoxWidth: 180
   uiBoxHeight: 60
   uiSpacing: 10
+  sfxSource: {fileID: 0}
+  rangedShotClip: {fileID: 0}
+  aoeClip: {fileID: 0}
+  heroAttackClip: {fileID: 0}
+  sfxVolume: 1
 --- !u!1 &1768692430
 GameObject:
   m_ObjectHideFlags: 0
@@ -3193,37 +3253,6 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 0, z: 0}
   m_TimeToStationary: 0.5
---- !u!1 &1872689049
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1872689050}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1872689050
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1872689049}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.2057072, y: -6.4408526, z: -3.338068}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1966655241
 GameObject:
   m_ObjectHideFlags: 0
@@ -3771,5 +3800,5 @@ SceneRoots:
   - {fileID: 228525989}
   - {fileID: 1517217462}
   - {fileID: 1376297719}
-  - {fileID: 1872689050}
   - {fileID: 1403890264}
+  - {fileID: 709562909}

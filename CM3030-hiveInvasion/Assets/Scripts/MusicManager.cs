@@ -8,18 +8,6 @@ public class MusicManager : MonoBehaviour
 {
     public static MusicManager Instance { get; private set; }
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    private static void EnsureMusicManager()
-    {
-        var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-        if (scene.name == "MainMenu") return; // do not create music in main menu
-        if (Instance == null)
-        {
-            var go = new GameObject("MusicManager");
-            go.AddComponent<MusicManager>();
-        }
-    }
-
     [Header("Music Settings")]
     public AudioClip backgroundMusic;
     [Range(0f,1f)] public float musicVolume = 0.35f;
