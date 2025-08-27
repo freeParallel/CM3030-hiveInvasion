@@ -29,6 +29,13 @@ public class HeroController : MonoBehaviour
     [Tooltip("Height of ability boxes")] public float uiBoxHeight = 60f;
     [Tooltip("Vertical spacing between boxes")] public float uiSpacing = 10f;
 
+    [Header("Audio")]
+    public AudioSource sfxSource;
+    public AudioClip rangedShotClip; // E fire
+    public AudioClip aoeClip;        // Q blast
+    public AudioClip heroAttackClip; // melee/auto-attack sound
+    [Range(0f,1f)] public float sfxVolume = 1f;
+
     private GameObject currentTarget;
     private GameObject lockedTarget; // E ability lock target
     private float lastAttackTime;
@@ -39,6 +46,30 @@ public class HeroController : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         playerCamera = Camera.main;
+
+        // Ensure SFX source for hero abilities
+        if (sfxSource == null)
+        {
+            sfxSource = GetComponent<AudioSource>();
+            if (sfxSource == null) sfxSource = gameObject.AddComponent<AudioSource>();
+            sfxSource.playOnAwake = false;
+            sfxSource.spatialBlend = 0f; // 2D hero SFX by default
+            sfxSource.volume = Mathf.Clamp01(sfxVolume);
+        }
+
+        // Autoload default clips from Resources if not assigned
+        if (rangedShotClip == null)
+        {
+            rangedShotClip = Resources.Load<AudioClip>("Audio/hero_shot");
+        }
+        if (aoeClip == null)
+        {
+            aoeClip = Resources.Load<AudioClip>("Audio/hero_blast");
+        }
+        if (heroAttackClip == null)
+        {
+            heroAttackClip = Resources.Load<AudioClip>("Audio/hero_attack");
+        }
     }
 
     void Update()
@@ -143,6 +174,7 @@ public class HeroController : MonoBehaviour
             if (enemyHP != null)
             {
                 enemyHP.TakeDamage(attackDamage);
+                if (sfxSource != null && heroAttackClip != null) sfxSource.PlayOneShot(heroAttackClip, Mathf.Clamp01(sfxVolume));
                 lastAttackTime = Time.time;
                 Debug.Log($"Hero deals {attackDamage} damage to {currentTarget.name}");
 
@@ -224,6 +256,7 @@ public class HeroController : MonoBehaviour
         }
 
         FireRangedShot(lockedTarget);
+        if (sfxSource != null && rangedShotClip != null) sfxSource.PlayOneShot(rangedShotClip, Mathf.Clamp01(sfxVolume));
         lastRangedShotTime = Time.time;
     }
 
@@ -275,6 +308,7 @@ public class HeroController : MonoBehaviour
                 }
             }
         }
+        if (sfxSource != null && aoeClip != null) sfxSource.PlayOneShot(aoeClip, Mathf.Clamp01(sfxVolume));
         Debug.Log($"Area blast hit {hitCount} enemies for {areaDamage} damage (radius {areaRadius}).");
     }
 

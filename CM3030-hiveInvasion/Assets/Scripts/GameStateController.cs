@@ -171,6 +171,8 @@ public class GameStateController : MonoBehaviour
         GUI.Label(new Rect(0, r.y + 75, w, 30), "Press M for Main Menu", hint);
     }
 
+    public bool IsGameOver => isGameOver;
+
     // Utility: check if a scene name is present in Build Settings
     bool IsSceneInBuild(string sceneName)
     {

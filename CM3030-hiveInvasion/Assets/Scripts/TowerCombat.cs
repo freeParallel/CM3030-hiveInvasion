@@ -27,6 +27,12 @@ public class TowerCombat : MonoBehaviour
     public GameObject manualTarget;
     public LineRenderer targetingLine;
 
+    [Header("Audio")]
+    public AudioSource sfxSource; // optional; auto-added if null
+    public AudioClip machineGunShotClip;
+    public AudioClip cannonShotClip;
+    [Range(0f,1f)] public float sfxVolume = 1f;
+
     private bool isManualTargeting = false;
     
     void Start()
@@ -48,6 +54,29 @@ public class TowerCombat : MonoBehaviour
             targetingLine.endWidth = 0.1f;
             targetingLine.positionCount = 2;
             targetingLine.enabled = false;
+        }
+
+        // Ensure we have an AudioSource for SFX
+        if (sfxSource == null)
+        {
+            sfxSource = GetComponent<AudioSource>();
+            if (sfxSource == null)
+            {
+                sfxSource = gameObject.AddComponent<AudioSource>();
+            }
+            sfxSource.playOnAwake = false;
+            sfxSource.spatialBlend = 1f; // 3D by default
+            sfxSource.volume = Mathf.Clamp01(sfxVolume);
+        }
+
+        // Autoload default shot clips from Resources if not assigned
+        if (machineGunShotClip == null)
+        {
+            machineGunShotClip = Resources.Load<AudioClip>("Audio/tower_machinegun");
+        }
+        if (cannonShotClip == null)
+        {
+            cannonShotClip = Resources.Load<AudioClip>("Audio/tower_cannon");
         }
     }
     
@@ -167,6 +196,7 @@ public class TowerCombat : MonoBehaviour
 
                 // VISUAL FEEDBACK
                 ShowMuzzleFlash();
+                PlayShotSfx();
             }
             else
             {
@@ -176,6 +206,7 @@ public class TowerCombat : MonoBehaviour
                 {
                     enemyHP.TakeDamage(Mathf.RoundToInt(finalDamage));
                     ShowMuzzleFlash();
+                    PlayShotSfx();
                 }
             }
         
@@ -391,6 +422,16 @@ public class TowerCombat : MonoBehaviour
             dir.y = 0f;
         }
         return dir.sqrMagnitude > 0 ? dir.normalized : Vector3.forward;
+    }
+
+    void PlayShotSfx()
+    {
+        if (sfxSource == null) return;
+        AudioClip clip = projectileStyle == ProjectileStyle.MachineGun ? machineGunShotClip : cannonShotClip;
+        if (clip != null)
+        {
+            sfxSource.PlayOneShot(clip, Mathf.Clamp01(sfxVolume));
+        }
     }
 
     bool IsSelected()

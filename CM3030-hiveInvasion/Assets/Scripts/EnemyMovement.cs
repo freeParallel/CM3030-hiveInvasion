@@ -21,11 +21,42 @@ public class EnemyMovement : MonoBehaviour
     public int attackDamage = 10;
     public float attackSpeed = 1f;
 
+    [Header("Audio")]
+    public AudioSource sfxSource;
+    public AudioClip attackClip;
+    [Range(0f,1f)] public float sfxVolume = 1f;
+
     private NavMeshAgent agent;
     private float lastAttackTime;
-
+    
     private enum TargetPriority { Gate, Base }
     private TargetPriority currentPriority = TargetPriority.Gate;
+
+    void Awake()
+    {
+        // Ensure SFX source
+        if (sfxSource == null)
+        {
+            sfxSource = GetComponent<AudioSource>();
+            if (sfxSource == null) sfxSource = gameObject.AddComponent<AudioSource>();
+            sfxSource.playOnAwake = false;
+            sfxSource.spatialBlend = 1f; // 3D sound for enemies
+            sfxSource.volume = Mathf.Clamp01(sfxVolume);
+        }
+        // Autoload clip based on enemy name if not assigned
+        if (attackClip == null)
+        {
+            string n = gameObject.name;
+            if (n.EndsWith("(Clone)")) n = n.Substring(0, n.Length - 7);
+            string lower = n.ToLower();
+            string key = "enemy_attack";
+            if (lower.Contains("armored")) key = "armored_attack";
+            else if (lower.Contains("ranged")) key = "ranged_attack";
+            else if (lower.Contains("swarm")) key = "swarm_attack";
+            var clip = Resources.Load<AudioClip>("Audio/" + key);
+            if (clip != null) attackClip = clip;
+        }
+    }
 
     void Start()
     {
@@ -160,6 +191,7 @@ public class EnemyMovement : MonoBehaviour
         if (gateHealth != null)
         {
             gateHealth.TakeDamage(attackDamage);
+            PlayAttackSfx();
             return;
         }
 
@@ -167,11 +199,20 @@ public class EnemyMovement : MonoBehaviour
         if (baseHealth != null)
         {
             baseHealth.TakeDamage(attackDamage);
+            PlayAttackSfx();
             return;
         }
 
         // Target has no recognized health; reacquire
         AcquireTarget();
+    }
+
+    private void PlayAttackSfx()
+    {
+        if (sfxSource != null && attackClip != null)
+        {
+            sfxSource.PlayOneShot(attackClip, Mathf.Clamp01(sfxVolume));
+        }
     }
 
     // Safe find helpers: using tags if they exist; falling back to names to avoid exceptions

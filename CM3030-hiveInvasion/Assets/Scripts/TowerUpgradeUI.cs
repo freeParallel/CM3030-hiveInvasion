@@ -13,6 +13,11 @@ public class TowerUpgradeUI : MonoBehaviour
     public int baseDamageUpgradeCost = 50;
     public int baseRangeUpgradeCost = 50;
 
+    [Header("Audio")]
+    public AudioSource sfxSource;
+    public AudioClip upgradeClip;
+    [Range(0f,1f)] public float sfxVolume = 1f;
+
     private GameObject selectedTower;
 
     void Start()
@@ -20,6 +25,21 @@ public class TowerUpgradeUI : MonoBehaviour
         // hide panel at start
         if(upgradePanel != null) 
             upgradePanel.SetActive(false);
+    
+        // Ensure SFX source
+        if (sfxSource == null)
+        {
+            sfxSource = GetComponent<AudioSource>();
+            if (sfxSource == null) sfxSource = gameObject.AddComponent<AudioSource>();
+            sfxSource.playOnAwake = false;
+            sfxSource.spatialBlend = 0f; // 2D UI SFX
+            sfxSource.volume = Mathf.Clamp01(sfxVolume);
+        }
+        // Autoload clip if not assigned
+        if (upgradeClip == null)
+        {
+            upgradeClip = Resources.Load<AudioClip>("Audio/tower_upgrade");
+        }
     
         // DEBUG: Check if buttons are assigned
         Debug.Log($"damageUpgradeButton is null: {damageUpgradeButton == null}");
@@ -124,6 +144,7 @@ public class TowerUpgradeUI : MonoBehaviour
             if (ResourceManager.Instance.SpendPoints(cost))
             {
                 towerData.UpgradeDamage();
+                if (sfxSource != null && upgradeClip != null) sfxSource.PlayOneShot(upgradeClip, Mathf.Clamp01(sfxVolume));
                 UpdateButtonStates(); // refresh state after upgrade
                 Debug.Log($"Damages upgraded. Cost: {cost}");
             }
@@ -146,6 +167,7 @@ public class TowerUpgradeUI : MonoBehaviour
             if (ResourceManager.Instance.SpendPoints(cost))
             {
                 towerData.UpgradeRange();
+                if (sfxSource != null && upgradeClip != null) sfxSource.PlayOneShot(upgradeClip, Mathf.Clamp01(sfxVolume));
                 UpdateButtonStates(); // refresh state after upgrade
                 Debug.Log($"Range upgraded. Cost: {cost}");
             }
