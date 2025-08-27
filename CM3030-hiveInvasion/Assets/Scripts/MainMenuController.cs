@@ -11,6 +11,15 @@ public class MainMenuController : MonoBehaviour
     [Header("Overlay")] public float overlayAlpha = 0.85f;
     public Color overlayColor = new Color(0f, 0f, 0f, 1f);
 
+    void Start()
+    {
+        // Ensure no gameplay BGM in the menu
+        if (MusicManager.Instance != null)
+        {
+            Destroy(MusicManager.Instance.gameObject);
+        }
+    }
+
     void OnGUI()
     {
         float w = Screen.width;
