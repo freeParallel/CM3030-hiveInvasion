@@ -21,9 +21,16 @@ public class GameStateController : MonoBehaviour
     [Tooltip("Scene name for the main menu (must be added to Build Settings later)")]
     public string mainMenuSceneName = "MainMenu";
 
+    [Header("Game Over Delays")]
+    [Tooltip("Delay (seconds, unscaled) before showing the defeat overlay after the base is destroyed")]
+    public float defeatOverlayDelay = 2f;
+    [Tooltip("Delay (seconds, unscaled) before showing the victory overlay after last wave cleared (0 = immediate)")]
+    public float victoryOverlayDelay = 0f;
+
     private bool isGameOver = false;
     private bool isWin = false;
     private string message = string.Empty;
+    private bool defeatPending = false;
 
     private WaveManager waveManager;
     private BaseHealth baseHealth;
@@ -58,15 +65,14 @@ public class GameStateController : MonoBehaviour
 
     void OnBaseDestroyed()
     {
-        if (isGameOver) return;
-        isGameOver = true;
-        isWin = false;
-        message = "Defeat";
+        if (isGameOver || defeatPending) return;
+        defeatPending = true;
 
-        // Halt the game completely on defeat
+        // Halt the game immediately so gameplay stops, but delay overlay using unscaled time
         Time.timeScale = 0f;
-
-        Debug.Log("Game Over: Base destroyed.");
+        overlayAlpha = 0f; // reset fade
+        Debug.Log("Base destroyed. Scheduling defeat overlay...");
+        StartCoroutine(ShowDefeatAfterDelay());
     }
 
     void OnWaveCompleted(int waveNumber)
@@ -97,6 +103,12 @@ public class GameStateController : MonoBehaviour
                 // Victory if we have finished all waves and still alive
                 if (lastWaveCompleted && baseHealth != null && baseHealth.GetCurrentHealth() > 0)
                 {
+                    // Optional delay for victory overlay
+                    float delay = Mathf.Max(0f, victoryOverlayDelay);
+                    if (delay > 0f)
+                    {
+                        yield return new WaitForSecondsRealtime(delay);
+                    }
                     isGameOver = true;
                     isWin = true;
                     message = "Victory";
@@ -167,6 +179,20 @@ public class GameStateController : MonoBehaviour
     }
 
     public bool IsGameOver => isGameOver;
+
+    System.Collections.IEnumerator ShowDefeatAfterDelay()
+    {
+        float delay = Mathf.Max(0f, defeatOverlayDelay);
+        if (delay > 0f)
+        {
+            yield return new WaitForSecondsRealtime(delay);
+        }
+        isGameOver = true;
+        isWin = false;
+        message = "Defeat";
+        defeatPending = false;
+        Debug.Log("Game Over: Base destroyed (overlay shown).");
+    }
 
     void RestartScene()
     {

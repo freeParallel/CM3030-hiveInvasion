@@ -7,10 +7,23 @@ public class BaseHealth : MonoBehaviour
     [Header("Base Health Settings")]
     public int maxHealth = 1000;
     public int currentHealth;
+
+    [Header("Audio")]
+    public AudioClip baseDestroyedClip;
+    [Range(0f,1f)] public float baseDestroyedVolume = 1f;
     
     // events for UI and game management
     public static UnityEvent<int, int> OnHealthChanged = new UnityEvent<int, int>(); // current & max
     public static UnityEvent OnBaseDestroyed = new UnityEvent();
+
+    void Awake()
+    {
+        // Autoload from Resources if not assigned
+        if (baseDestroyedClip == null)
+        {
+            baseDestroyedClip = Resources.Load<AudioClip>("Audio/base_destroyed");
+        }
+    }
 
     void Start()
     {
@@ -56,6 +69,22 @@ public class BaseHealth : MonoBehaviour
     private void BaseDestroyed()
     {
         Debug.Log("Base Destroyed. YOU DIED.");
+
+        // play base destroyed SFX (if available)
+        if (baseDestroyedClip != null)
+        {
+            if (MusicManager.Instance != null)
+            {
+                // Use 2D one-shot for clarity regardless of camera distance
+                MusicManager.Instance.PlayOneShot2D(baseDestroyedClip, baseDestroyedVolume);
+            }
+            else
+            {
+                // Fallback 3D playback at camera (if present) or base position
+                var pos = Camera.main != null ? Camera.main.transform.position : transform.position;
+                AudioSource.PlayClipAtPoint(baseDestroyedClip, pos, Mathf.Clamp01(baseDestroyedVolume));
+            }
+        }
         
         // notify game management system
         OnBaseDestroyed.Invoke();

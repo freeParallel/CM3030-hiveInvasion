@@ -28,6 +28,11 @@ public static class MusicBootstrap
             var go = new GameObject("MusicManager");
             go.AddComponent<MusicManager>();
         }
+        else
+        {
+            // Reset volume in case previous scene faded it to zero
+            MusicManager.Instance.ResetVolumeToDefault();
+        }
     }
 }
 

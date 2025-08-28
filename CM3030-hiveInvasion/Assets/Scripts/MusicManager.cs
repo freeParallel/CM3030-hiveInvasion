@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 // HI-020: Simple background music manager
 // - Drop this on a GameObject in your first scene (e.g., GameSystems)
@@ -14,6 +15,8 @@ public class MusicManager : MonoBehaviour
     public bool loop = true;
 
     private AudioSource source;
+    private AudioSource sfx2DSource;
+    private Coroutine fadeCoroutine;
 
     void Awake()
     {
@@ -34,6 +37,13 @@ public class MusicManager : MonoBehaviour
         source.loop = loop;
         source.volume = Mathf.Clamp01(musicVolume);
         source.spatialBlend = 0f; // 2D music
+
+        // Separate 2D SFX source so music fades don't affect one-shots
+        sfx2DSource = gameObject.AddComponent<AudioSource>();
+        sfx2DSource.playOnAwake = false;
+        sfx2DSource.loop = false;
+        sfx2DSource.volume = 1f;
+        sfx2DSource.spatialBlend = 0f;
 
         if (backgroundMusic == null)
         {
@@ -58,6 +68,46 @@ public class MusicManager : MonoBehaviour
         source.loop = loopClip;
         source.volume = Mathf.Clamp01(volume);
         source.Play();
+    }
+
+    // Play a 2D one-shot SFX without interrupting the current music
+    public void PlayOneShot2D(AudioClip clip, float volume = 1f)
+    {
+        if (clip == null) return;
+        if (sfx2DSource != null) sfx2DSource.PlayOneShot(clip, Mathf.Clamp01(volume));
+    }
+
+    // Fade music volume to target over duration (unscaled time)
+    public void FadeTo(float targetVolume, float duration, bool unscaled = true)
+    {
+        if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
+        fadeCoroutine = StartCoroutine(FadeRoutine(Mathf.Clamp01(targetVolume), Mathf.Max(0.001f, duration), unscaled));
+    }
+
+    public void FadeOut(float duration)
+    {
+        FadeTo(0f, duration, true);
+    }
+
+    public void ResetVolumeToDefault()
+    {
+        if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
+        source.volume = Mathf.Clamp01(musicVolume);
+    }
+
+    private IEnumerator FadeRoutine(float target, float duration, bool unscaled)
+    {
+        float start = source.volume;
+        float t = 0f;
+        while (t < duration)
+        {
+            t += unscaled ? Time.unscaledDeltaTime : Time.deltaTime;
+            float k = Mathf.Clamp01(t / duration);
+            source.volume = Mathf.Lerp(start, target, k);
+            yield return null;
+        }
+        source.volume = target;
+        fadeCoroutine = null;
     }
 }
 
