@@ -96,17 +96,28 @@ public class EnemyMovement : MonoBehaviour
         float distanceToTarget = Vector3.Distance(transform.position, currentTarget.position);
         float effectiveRange = isRangedEnemy ? rangedAttackRange : meleeAttackRange;
 
+        bool canUseAgent = agent != null && agent.enabled && EnsureOnNavMesh();
+
         if (distanceToTarget <= effectiveRange)
         {
-            agent.isStopped = true;
+            if (canUseAgent) agent.isStopped = true;
             AttackCurrentTarget();
         }
         else
         {
-            agent.isStopped = false;
-            if (agent.destination != currentTarget.position)
+            if (canUseAgent)
             {
-                agent.SetDestination(currentTarget.position);
+                agent.isStopped = false;
+                if (agent.destination != currentTarget.position)
+                {
+                    agent.SetDestination(currentTarget.position);
+                }
+            }
+            // Play walk animation when moving
+            var anim = GetComponentInChildren<EnemyAnimationController>();
+            if (anim != null)
+            {
+                anim.PlayWalk();
             }
         }
     }
@@ -130,7 +141,7 @@ public class EnemyMovement : MonoBehaviour
                 if (gateObject != null)
                 {
                     currentTarget = gateObject.transform;
-                    if (agent != null && currentTarget != null)
+                    if (agent != null && agent.enabled && currentTarget != null && EnsureOnNavMesh())
                     {
                         agent.SetDestination(currentTarget.position);
                     }
@@ -144,7 +155,7 @@ public class EnemyMovement : MonoBehaviour
                 if (baseObject != null)
                 {
                     currentTarget = baseObject.transform;
-                    if (agent != null && currentTarget != null)
+                    if (agent != null && agent.enabled && currentTarget != null && EnsureOnNavMesh())
                     {
                         agent.SetDestination(currentTarget.position);
                     }
@@ -180,6 +191,13 @@ public class EnemyMovement : MonoBehaviour
             TryDamageTarget();
         }
 
+        // Attack animation event
+        var anim = GetComponentInChildren<EnemyAnimationController>();
+        if (anim != null)
+        {
+            anim.PlayAttack();
+        }
+
         lastAttackTime = Time.time;
     }
 
@@ -213,6 +231,18 @@ public class EnemyMovement : MonoBehaviour
         {
             sfxSource.PlayOneShot(attackClip, Mathf.Clamp01(sfxVolume));
         }
+    }
+
+    private bool EnsureOnNavMesh()
+    {
+        if (agent == null || !agent.enabled) return false;
+        if (agent.isOnNavMesh) return true;
+        UnityEngine.AI.NavMeshHit hit;
+        if (UnityEngine.AI.NavMesh.SamplePosition(transform.position, out hit, 5f, UnityEngine.AI.NavMesh.AllAreas))
+        {
+            return agent.Warp(hit.position);
+        }
+        return false;
     }
 
     // Safe find helpers: using tags if they exist; falling back to names to avoid exceptions

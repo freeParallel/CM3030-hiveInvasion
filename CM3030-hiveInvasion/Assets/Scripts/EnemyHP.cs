@@ -54,8 +54,22 @@ public class EnemyHP : MonoBehaviour
         {
             AudioSource.PlayClipAtPoint(deathClip, transform.position, Mathf.Clamp01(deathVolume));
         }
+
+        // Try to play death animation and delay destruction if available
+        var anim = GetComponentInChildren<EnemyAnimationController>();
+        if (anim != null)
+        {
+            anim.PlayDie();
+            // disable movement to avoid sliding
+            var agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (agent != null) agent.enabled = false;
+            // disable colliders to prevent further hits
+            foreach (var c in GetComponentsInChildren<Collider>()) c.enabled = false;
+            // Destroy after a short delay to allow the animation to be seen
+            Destroy(gameObject, 1.0f);
+            return;
+        }
         
-        //Debug.Log("Enemy obliterated.");
         Destroy(gameObject);
     }
 }
