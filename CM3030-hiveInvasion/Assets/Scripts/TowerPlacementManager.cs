@@ -118,10 +118,14 @@ public class TowerPlacementManager : MonoBehaviour
         Collider[] nearby = Physics.OverlapSphere(position, minTowerSpacing);
         foreach (Collider col in nearby)
         {
-            if (col.CompareTag("Tower"))
-            {
-                return false;
-            }
+            if (col == null) continue;
+
+            // Robust: treat any collider that belongs to a tower root as a tower
+            var towerData = col.GetComponentInParent<TowerData>();
+            if (towerData != null) return false;
+
+            // Fallback to tag check
+            if (col.CompareTag("Tower")) return false;
         }
         return true;
     }

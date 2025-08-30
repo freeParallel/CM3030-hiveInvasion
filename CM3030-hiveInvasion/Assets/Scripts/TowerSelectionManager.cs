@@ -77,8 +77,16 @@ public class TowerSelectionManager : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
             GameObject hitObject = hit.collider.gameObject;
+
+            // Prefer robust detection by walking up to a TowerData root
+            var towerData = hit.collider.GetComponentInParent<TowerData>();
+            if (towerData != null)
+            {
+                SelectTower(towerData.gameObject);
+                return;
+            }
             
-            // if tower is select with click
+            // Fallback to tag check on the collider we hit
             if (hitObject.CompareTag("Tower"))
             {
                 SelectTower(hitObject);
@@ -98,7 +106,8 @@ public class TowerSelectionManager : MonoBehaviour
         
         // select tower
         selectedTower = tower;
-        selectedTowerRenderer = tower.GetComponent<Renderer>();
+        // Prefer a renderer from children so we work even when root has no Renderer
+        selectedTowerRenderer = tower.GetComponentInChildren<Renderer>();
 
         if (selectedTowerRenderer != null && selectionMaterial != null)
         {
