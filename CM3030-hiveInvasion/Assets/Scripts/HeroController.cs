@@ -41,6 +41,8 @@ public class HeroController : MonoBehaviour
     private float lastAttackTime;
     private float lastAreaBlastTime = -Mathf.Infinity;
     private float lastRangedShotTime = -Mathf.Infinity;
+
+    private HeroAnimationController heroAnim;
     
     void Start()
     {
@@ -70,6 +72,14 @@ public class HeroController : MonoBehaviour
         {
             heroAttackClip = Resources.Load<AudioClip>("Audio/hero_attack");
         }
+
+        // Acquire animation bridge and hook death animation
+        heroAnim = GetComponentInChildren<HeroAnimationController>();
+        var hh = GetComponent<HeroHealth>();
+        if (hh != null)
+        {
+            HeroHealth.OnHeroDied.AddListener(() => heroAnim?.PlayDie());
+        }
     }
 
     void Update()
@@ -91,6 +101,13 @@ public class HeroController : MonoBehaviour
             {
                 TryRangedShot();
             }
+        }
+
+        // Drive locomotion animation by agent velocity
+        if (agent != null && heroAnim != null)
+        {
+            float norm = (agent.speed > 0f) ? agent.velocity.magnitude / agent.speed : 0f;
+            heroAnim.SetMoveSpeed(norm);
         }
         
         // Validate E-locked target range and existence (clear when out of range or destroyed)
@@ -175,6 +192,7 @@ public class HeroController : MonoBehaviour
             {
                 enemyHP.TakeDamage(attackDamage);
                 if (sfxSource != null && heroAttackClip != null) sfxSource.PlayOneShot(heroAttackClip, Mathf.Clamp01(sfxVolume));
+                heroAnim?.PlayAttack();
                 lastAttackTime = Time.time;
                 Debug.Log($"Hero deals {attackDamage} damage to {currentTarget.name}");
 
@@ -256,6 +274,7 @@ public class HeroController : MonoBehaviour
         }
 
         FireRangedShot(lockedTarget);
+        heroAnim?.PlayShoot();
         if (sfxSource != null && rangedShotClip != null) sfxSource.PlayOneShot(rangedShotClip, Mathf.Clamp01(sfxVolume));
         lastRangedShotTime = Time.time;
     }
@@ -292,6 +311,7 @@ public class HeroController : MonoBehaviour
     void PerformAreaBlast()
     {
         // Visual feedback
+        heroAnim?.PlayAOE();
         StartCoroutine(FlashColor(Color.cyan, 0.15f));
 
         Collider[] hits = Physics.OverlapSphere(transform.position, areaRadius);
