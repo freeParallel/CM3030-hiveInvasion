@@ -10,6 +10,9 @@ public class EnemyHP : MonoBehaviour
     public AudioClip deathClip;
     [Range(0f,1f)] public float deathVolume = 1f;
 
+    // Optional UI health bar (auto-attached if missing)
+    private HealthBar healthBar;
+
     void Awake()
     {
         // Autoload death clips based on enemy name if not assigned
@@ -25,17 +28,31 @@ public class EnemyHP : MonoBehaviour
             var clip = Resources.Load<AudioClip>("Audio/" + key);
             if (clip != null) deathClip = clip;
         }
+
+        // Ensure health bar exists so all enemies show HP by default
+        healthBar = GetComponent<HealthBar>();
+        if (healthBar == null)
+        {
+            healthBar = gameObject.AddComponent<HealthBar>();
+        }
     }
     
     void Start()
     {
-        currentHealth = maxHealth;    
+        currentHealth = maxHealth;
+        if (healthBar != null)
+        {
+            healthBar.UpdateHealthBar(currentHealth, maxHealth);
+        }
     }
 
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-        //Debug.Log($"Enemy took {damage}, current health is {currentHealth}/{maxHealth}");
+        if (healthBar != null)
+        {
+            healthBar.UpdateHealthBar(currentHealth, maxHealth);
+        }
 
         if (currentHealth <= 0)
         {
