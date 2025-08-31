@@ -5,6 +5,8 @@ public class TowerManager : MonoBehaviour
 {
     [Header("Tower Management")]
     public List<GameObject> placedTowers = new List<GameObject>();
+
+    [Header("Limits")] public int maxTowers = 10;
     
     // singleton access
     public static TowerManager Instance;
@@ -27,6 +29,12 @@ public class TowerManager : MonoBehaviour
     // register new tower in tower system
     public GameObject RegisterTower(GameObject towerPrefab, Vector3 position)
     {
+        if (IsAtLimit())
+        {
+            Debug.Log("TowerManager: Cannot register tower — limit reached.");
+            return null;
+        }
+
         // create the tower
         GameObject newTower = Instantiate(towerPrefab, position, Quaternion.identity);
         
@@ -66,6 +74,17 @@ public class TowerManager : MonoBehaviour
     public int GetTowerCount()
     {
         return placedTowers.Count;
+    }
+
+    // at limit?
+    public bool IsAtLimit()
+    {
+        return GetTowerCount() >= Mathf.Max(0, maxTowers);
+    }
+
+    public int GetMaxTowers()
+    {
+        return Mathf.Max(0, maxTowers);
     }
     
     // get tower by ID for upgrades

@@ -5,7 +5,12 @@ public class ResourceManager : MonoBehaviour
 {
     [Header("Resource Settings")]
     public int startingPoints = 250;
-    public int towerCost = 100;
+    [Tooltip("Base cost for the first tower")] public int towerCost = 100;
+
+    [Header("Cost Scaling")]
+    [Tooltip("Use linear cost increase (base + increment * count). If false, use multiplier^")] public bool useLinearScaling = true;
+    [Tooltip("Amount added per existing tower when linear scaling is enabled")] public int costIncrement = 25;
+    [Tooltip("Multiplier applied per existing tower when linear scaling is disabled")] public float costMultiplier = 1.15f;
 
     [Header("Current State")] public int currentPoints;
     
@@ -70,6 +75,20 @@ public class ResourceManager : MonoBehaviour
     // get tower cost (UI display)
     public int GetTowerCost()
     {
-        return towerCost;
+        int baseCost = Mathf.Max(0, towerCost);
+        int count = (TowerManager.Instance != null) ? TowerManager.Instance.GetTowerCount() : 0;
+        if (count <= 0) return baseCost;
+
+        if (useLinearScaling)
+        {
+            long scaled = (long)baseCost + (long)costIncrement * (long)count;
+            return (int)Mathf.Clamp(scaled, 0, int.MaxValue);
+        }
+        else
+        {
+            double scaled = (double)baseCost * System.Math.Pow(System.Math.Max(0.0001, costMultiplier), count);
+            int rounded = Mathf.Max(0, Mathf.RoundToInt((float)scaled));
+            return rounded;
+        }
     }
 }

@@ -74,11 +74,19 @@ public class TowerPlacementManager : MonoBehaviour
     
     void TryPlaceTower()
     {
-        // check if we can afford a tower 
-        if (!ResourceManager.Instance.CanAfford(ResourceManager.Instance.GetTowerCost()))
+        // enforce tower cap first
+        if (TowerManager.Instance != null && TowerManager.Instance.IsAtLimit())
         {
-            Debug.Log($"Can't afford tower! You need {ResourceManager.Instance.GetTowerCost()} points." +
-                      $" You have {ResourceManager.Instance.GetCurrentPoints()}");
+            Debug.Log($"Tower limit reached ({TowerManager.Instance.GetMaxTowers()}).");
+            ToastUI.Show("Maximum towers reached!", Color.red, 1.75f);
+            return;
+        }
+
+        int cost = ResourceManager.Instance.GetTowerCost();
+        // check if we can afford a tower 
+        if (!ResourceManager.Instance.CanAfford(cost))
+        {
+            Debug.Log($"Can't afford tower! You need {cost} points. You have {ResourceManager.Instance.GetCurrentPoints()}");
             return;
         }
         
@@ -91,10 +99,17 @@ public class TowerPlacementManager : MonoBehaviour
                 // check position
                 if (IsPositionClear(hit.point))
                 {
-                    // deduct points before placing tower
-                    if (ResourceManager.Instance.SpendPoints(ResourceManager.Instance.GetTowerCost()))
+                    // spend points then place tower; refund on failure as a safeguard
+                    if (ResourceManager.Instance.SpendPoints(cost))
                     {
                         GameObject newTower = TowerManager.Instance.RegisterTower(towerPrefab, hit.point);
+                        if (newTower == null)
+                        {
+                            // limit may have been reached concurrently; refund
+                            ResourceManager.Instance.AddPoints(cost);
+                            Debug.LogWarning("Tower placement failed after spending points — refunded.");
+                            return;
+                        }
 
                         Debug.Log("Tower placement at " + hit.point);
                         CancelPlacementMode();

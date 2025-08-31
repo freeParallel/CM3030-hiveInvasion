@@ -1,5 +1,8 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 // Minimal main menu overlay for a dedicated MainMenu scene.
 // Add this to an empty GameObject in Assets/Scenes/MainMenu.unity.
@@ -11,12 +14,44 @@ public class MainMenuController : MonoBehaviour
     [Header("Overlay")] public float overlayAlpha = 1f;
     public Color overlayColor = new Color(0f, 0f, 0f, 1f);
 
+    [Header("Music")]
+    [Tooltip("If assigned, this clip will be played as the main menu music")] public AudioClip menuMusic;
+    [Tooltip("Play menu music when the scene starts")] public bool playMenuMusic = true;
+    [Tooltip("Loop the menu music")] public bool loopMusic = true;
+    [Range(0f,1f)] public float musicVolume = 0.5f;
+    [Tooltip("Editor-only path fallback (GUIDed asset) for loading if menuMusic not assigned")]
+    public string menuMusicAssetPath = "Assets/MaxStack/Wirescapes/Audio/Music/WS Urban Decay.wav";
+
     void Start()
     {
         // Ensure no gameplay BGM in the menu
         if (MusicManager.Instance != null)
         {
             Destroy(MusicManager.Instance.gameObject);
+        }
+
+        if (playMenuMusic)
+        {
+            var src = GetComponent<AudioSource>();
+            if (src == null) src = gameObject.AddComponent<AudioSource>();
+            src.playOnAwake = false;
+            src.loop = loopMusic;
+            src.volume = Mathf.Clamp01(musicVolume);
+            src.spatialBlend = 0f;
+
+            AudioClip clipToPlay = menuMusic;
+#if UNITY_EDITOR
+            if (clipToPlay == null && !string.IsNullOrEmpty(menuMusicAssetPath))
+            {
+                var clip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(menuMusicAssetPath);
+                if (clip != null) clipToPlay = clip;
+            }
+#endif
+            if (clipToPlay != null)
+            {
+                src.clip = clipToPlay;
+                src.Play();
+            }
         }
     }
 
