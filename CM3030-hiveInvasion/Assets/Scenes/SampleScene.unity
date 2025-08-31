@@ -1537,10 +1537,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e1d5ec67e6ba4955943871bc2364067, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 10
-  edgeScrollSpeed: 15
-  edgeScrollBoundary: 20
+  moveSpeed: 40
+  edgeScrollSpeed: 40
+  edgeScrollBoundary: 40
   mapBounds: {x: 60, y: 60}
+  zoomSpeed: 60
+  scrollSensitivity: 0.01
+  invertZoom: 0
+  minFieldOfView: 25
+  maxFieldOfView: 85
+  minOrthographicSize: 5
+  maxOrthographicSize: 60
 --- !u!114 &930144958
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2218,6 +2225,13 @@ MonoBehaviour:
   edgeScrollSpeed: 15
   edgeScrollBoundary: 20
   mapBounds: {x: 60, y: 60}
+  zoomSpeed: 40
+  scrollSensitivity: 0.01
+  invertZoom: 0
+  minFieldOfView: 25
+  maxFieldOfView: 85
+  minOrthographicSize: 5
+  maxOrthographicSize: 60
 --- !u!4 &1438208943
 Transform:
   m_ObjectHideFlags: 0
