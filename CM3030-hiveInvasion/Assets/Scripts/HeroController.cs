@@ -96,14 +96,16 @@ public class HeroController : MonoBehaviour
             HandleRightClick();
         }
 
-        // Special abilities
+        // Special abilities (remapped to 1 and 2)
         if (Keyboard.current != null)
         {
-            if (Keyboard.current.qKey.wasPressedThisFrame)
+            if ((Keyboard.current.digit1Key != null && Keyboard.current.digit1Key.wasPressedThisFrame) ||
+                (Keyboard.current.numpad1Key != null && Keyboard.current.numpad1Key.wasPressedThisFrame))
             {
                 TryAreaBlast();
             }
-            if (Keyboard.current.eKey.wasPressedThisFrame)
+            if ((Keyboard.current.digit2Key != null && Keyboard.current.digit2Key.wasPressedThisFrame) ||
+                (Keyboard.current.numpad2Key != null && Keyboard.current.numpad2Key.wasPressedThisFrame))
             {
                 TryRangedShot();
             }
@@ -239,7 +241,7 @@ public class HeroController : MonoBehaviour
 
             if (candidate == null)
             {
-                Debug.Log("Press E while pointing at an enemy to lock target.");
+                Debug.Log("Press 2 while pointing at an enemy to lock target.");
                 return;
             }
 
@@ -248,7 +250,7 @@ public class HeroController : MonoBehaviour
             if (dist <= rangedRange)
             {
                 lockedTarget = candidate;
-                Debug.Log($"Locked target: {lockedTarget.name}. Press E again to fire.");
+                Debug.Log($"Locked target: {lockedTarget.name}. Press 2 again to fire.");
                 return; // Do not fire on the first press; only lock
             }
             else
@@ -437,9 +439,9 @@ public class HeroController : MonoBehaviour
         float y = uiY;
         float x = uiX;
 
-        // Q - AOE
+        // 1 - AOE
         Rect qRect = new Rect(x, y, boxWidth, boxHeight);
-        GUI.Box(qRect, "Q - AOE Blast");
+        GUI.Box(qRect, "1 - AOE Blast");
         float areaElapsed = Time.time - lastAreaBlastTime;
         bool areaReady = areaElapsed >= areaCooldown;
         float areaRemaining = Mathf.Max(0f, areaCooldown - areaElapsed);
@@ -450,10 +452,10 @@ public class HeroController : MonoBehaviour
         GUI.Box(new Rect(qRect.x + 10, qRect.y + 40, qRect.width - 20, 10), "");
         GUI.Box(new Rect(qRect.x + 10, qRect.y + 40, (qRect.width - 20) * Mathf.Clamp01(areaFill), 10), "");
 
-        // E - Ranged
+        // 2 - Ranged
         y += boxHeight + uiSpacing;
         Rect eRect = new Rect(x, y, boxWidth, boxHeight);
-        GUI.Box(eRect, "E - Ranged Shot");
+        GUI.Box(eRect, "2 - Ranged Shot");
         string eText;
         if (lockedTarget != null)
         {
@@ -461,7 +463,7 @@ public class HeroController : MonoBehaviour
         }
         else
         {
-            eText = "Hover enemy and press E to lock";
+            eText = "Hover enemy and press 2 to lock";
         }
         GUI.Label(new Rect(eRect.x + 10, eRect.y + 20, eRect.width - 20, 20), eText);
 

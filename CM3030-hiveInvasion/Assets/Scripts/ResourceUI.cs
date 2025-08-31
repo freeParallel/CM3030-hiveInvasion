@@ -13,6 +13,10 @@ public class ResourceUI : MonoBehaviour
     [Range(0.5f, 1.2f)] public float costRelativeSize = 0.75f;
     public Color costColor = new Color(0.82f, 0.93f, 1f, 1f);
 
+    public bool showTowerCount = true;
+    [Range(0.5f, 1.2f)] public float countRelativeSize = 0.75f;
+    public Color countColor = new Color(0.9f, 1f, 0.9f, 1f);
+
     [Header("Animation")]
     [Tooltip("Duration of the points count animation")] public float animateDuration = 0.45f;
     [Range(0f, 0.5f)] [Tooltip("How much the text scales up during a gain/spend")] public float punchScale = 0.15f;
@@ -22,6 +26,8 @@ public class ResourceUI : MonoBehaviour
     private int lastLogicalPoints;
     private int displayedPoints;
     private int lastTowerCost = int.MinValue;
+    private int lastTowerCount = -1;
+    private int lastTowerMax = -1;
     private Color baseColor = Color.white;
     private Vector3 baseScale = Vector3.one;
     private Coroutine animRoutine;
@@ -108,7 +114,9 @@ public class ResourceUI : MonoBehaviour
     private void EnsureCostRefreshed()
     {
         int cost = (ResourceManager.Instance != null) ? ResourceManager.Instance.GetTowerCost() : lastTowerCost;
-        if (cost != lastTowerCost)
+        int count = (TowerManager.Instance != null) ? TowerManager.Instance.GetTowerCount() : lastTowerCount;
+        int max = (TowerManager.Instance != null) ? TowerManager.Instance.GetMaxTowers() : lastTowerMax;
+        if (cost != lastTowerCost || count != lastTowerCount || max != lastTowerMax)
         {
             UpdateResourceDisplayText(displayedPoints, true);
         }
@@ -140,6 +148,19 @@ public class ResourceUI : MonoBehaviour
             }
         }
 
-        resourceText.text = $"Points {points:N0}{costSuffix}";
+        string towersSuffix = string.Empty;
+        if (showTowerCount && TowerManager.Instance != null)
+        {
+            int count = TowerManager.Instance.GetTowerCount();
+            int max = TowerManager.Instance.GetMaxTowers();
+            string hex = ColorUtility.ToHtmlStringRGB(countColor);
+            string sizeTag = Mathf.Clamp(Mathf.RoundToInt(countRelativeSize * 100f), 10, 300) + "%";
+            string separator = "\n"; // always on new line for clarity
+            towersSuffix = separator + $"<size={sizeTag}><color=#{hex}>Towers {count} / {max}</color></size>";
+            lastTowerCount = count;
+            lastTowerMax = max;
+        }
+
+        resourceText.text = $"Points {points:N0}{costSuffix}{towersSuffix}";
     }
 }

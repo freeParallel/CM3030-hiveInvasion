@@ -13,13 +13,16 @@ public class RTSCameraController : MonoBehaviour
     [SerializeField] private Vector2 mapBounds = new Vector2(60f, 60f);
 
     [Header("Zoom Settings")]
-    [Tooltip("How fast the zoom changes (affects FOV or Ortho Size)")] [SerializeField] private float zoomSpeed = 40f;
+    [Tooltip("How fast the zoom changes (affects FOV or Ortho Size")] [SerializeField] private float zoomSpeed = 40f;
     [Tooltip("Scale for mouse wheel delta before applying zoomSpeed")] [SerializeField] private float scrollSensitivity = 0.01f;
     [Tooltip("Invert zoom direction (true = wheel up zooms out)")] [SerializeField] private bool invertZoom = false;
     [SerializeField] private float minFieldOfView = 25f;
     [SerializeField] private float maxFieldOfView = 85f;
     [SerializeField] private float minOrthographicSize = 5f;
     [SerializeField] private float maxOrthographicSize = 60f;
+
+    [Header("Rotation Settings")]
+    [Tooltip("Yaw rotation speed in degrees per second when holding Q/E")] [SerializeField] private float rotateSpeed = 90f;
 
     // Input System
     private CameraControls cameraControls;
@@ -71,6 +74,7 @@ public class RTSCameraController : MonoBehaviour
     {
         HandleMovement();
         HandleZoom();
+        HandleRotation();
     }
 
     private void OnMovementInput(InputAction.CallbackContext context)
@@ -171,6 +175,16 @@ public class RTSCameraController : MonoBehaviour
             float fov = cachedCamera.fieldOfView - (axis * zoomSpeed * Time.deltaTime);
             cachedCamera.fieldOfView = Mathf.Clamp(fov, minFieldOfView, maxFieldOfView);
         }
+    }
+
+    private void HandleRotation()
+    {
+        if (Keyboard.current == null) return;
+        float yaw = 0f;
+        if (Keyboard.current.qKey.isPressed) yaw -= 1f;
+        if (Keyboard.current.eKey.isPressed) yaw += 1f;
+        if (Mathf.Approximately(yaw, 0f)) return;
+        transform.Rotate(0f, yaw * rotateSpeed * Time.deltaTime, 0f, Space.World);
     }
 
     private Vector2 GetEdgeScrollMovement()
