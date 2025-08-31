@@ -22,6 +22,12 @@ public class HeroController : MonoBehaviour
     [Tooltip("Cooldown in seconds for ranged shot (E)")] public float rangedCooldown = 1.0f;
     [Tooltip("Cooldown in seconds for area blast")] public float areaCooldown = 5f;
 
+    [Header("AOE Visual")] 
+    [Tooltip("Ring color for Q blast visual")] public Color aoeRingColor = new Color(0.2f, 1f, 1f, 0.85f);
+    [Tooltip("How long the ring expands/fades")] public float aoeRingDuration = 0.35f;
+    [Tooltip("Line width of the ring")] public float aoeRingWidth = 0.15f;
+    [Tooltip("Segments for the ring circle")] [Range(8,128)] public int aoeRingSegments = 64;
+
     [Header("Hero UI")]
     [Tooltip("Left offset (pixels) for ability boxes")] public float uiX = 10f;
     [Tooltip("Top offset (pixels) for ability boxes")] public float uiY = 300f;
@@ -313,6 +319,7 @@ public class HeroController : MonoBehaviour
         // Visual feedback
         heroAnim?.PlayAOE();
         StartCoroutine(FlashColor(Color.cyan, 0.15f));
+        SpawnAoeRing();
 
         Collider[] hits = Physics.OverlapSphere(transform.position, areaRadius);
         int hitCount = 0;
@@ -330,6 +337,62 @@ public class HeroController : MonoBehaviour
         }
         if (sfxSource != null && aoeClip != null) sfxSource.PlayOneShot(aoeClip, Mathf.Clamp01(sfxVolume));
         Debug.Log($"Area blast hit {hitCount} enemies for {areaDamage} damage (radius {areaRadius}).");
+    }
+
+    void SpawnAoeRing()
+    {
+        // Build a transient ring using LineRenderer
+        var go = new GameObject("AOE_Ring", typeof(LineRenderer));
+        go.transform.position = new Vector3(transform.position.x, transform.position.y + 0.05f, transform.position.z);
+        var lr = go.GetComponent<LineRenderer>();
+        BuildRingRenderer(lr, 0.1f);
+        StartCoroutine(AoeRingRoutine(lr, areaRadius, Mathf.Max(0.05f, aoeRingDuration)));
+    }
+
+    System.Collections.IEnumerator AoeRingRoutine(LineRenderer lr, float targetRadius, float duration)
+    {
+        float t = 0f;
+        float startRadius = 0.1f;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            float u = Mathf.Clamp01(t / duration);
+            float r = Mathf.Lerp(startRadius, targetRadius, 1f - Mathf.Pow(1f - u, 3f));
+            UpdateRing(lr, r);
+            SetLineRendererColor(lr, new Color(aoeRingColor.r, aoeRingColor.g, aoeRingColor.b, Mathf.Lerp(aoeRingColor.a, 0f, u)));
+            yield return null;
+        }
+        Destroy(lr.gameObject);
+    }
+
+    void BuildRingRenderer(LineRenderer lr, float initialRadius)
+    {
+        lr.useWorldSpace = false;
+        lr.loop = true;
+        lr.widthMultiplier = Mathf.Max(0.01f, aoeRingWidth);
+        lr.positionCount = Mathf.Clamp(aoeRingSegments, 8, 256);
+        // Material that supports color/alpha without needing textures
+        var mat = new Material(Shader.Find("Sprites/Default"));
+        lr.material = mat;
+        SetLineRendererColor(lr, aoeRingColor);
+        UpdateRing(lr, initialRadius);
+    }
+
+    void UpdateRing(LineRenderer lr, float radius)
+    {
+        int count = lr.positionCount;
+        float step = Mathf.PI * 2f / count;
+        for (int i = 0; i < count; i++)
+        {
+            float a = i * step;
+            lr.SetPosition(i, new Vector3(Mathf.Cos(a) * radius, 0f, Mathf.Sin(a) * radius));
+        }
+    }
+
+    void SetLineRendererColor(LineRenderer lr, Color c)
+    {
+        lr.startColor = c;
+        lr.endColor = c;
     }
 
     System.Collections.IEnumerator FlashColor(Color flashColor, float duration)

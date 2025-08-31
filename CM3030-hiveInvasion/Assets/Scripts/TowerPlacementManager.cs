@@ -14,6 +14,16 @@ public class TowerPlacementManager : MonoBehaviour
     private bool placementMode = false;
     private Camera playerCamera;
 
+    [Header("Preview")]
+    [Tooltip("Radius of the preview ring (visual only)")] public float previewRadius = 0.75f;
+    public Color previewValidColor = new Color(0.4f, 1f, 0.4f, 0.9f);
+    public Color previewInvalidColor = new Color(1f, 0.35f, 0.35f, 0.9f);
+    public float previewLineWidth = 0.1f;
+    [Range(8,128)] public int previewSegments = 64;
+
+    private GameObject previewGO;
+    private LineRenderer previewLR;
+
     void Start()
     {
         playerCamera = Camera.main;
@@ -23,6 +33,9 @@ public class TowerPlacementManager : MonoBehaviour
         {
             placeTowerButton.onClick.AddListener(TogglePlacementMode);
         }
+
+        // Bottom-of-screen hint
+        PlacementHintUI.ShowBottomHint("Press T to place a tower");
     }
 
     void Update()
@@ -34,9 +47,13 @@ public class TowerPlacementManager : MonoBehaviour
         }
         
         // Handle tower placement when in placement mode
-        if (placementMode && Mouse.current.leftButton.wasPressedThisFrame)
+        if (placementMode)
         {
-            TryPlaceTower();
+            UpdatePlacementPreview();
+            if (Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                TryPlaceTower();
+            }
         }
         
         // Cancel placement mode wit esc key
@@ -54,16 +71,19 @@ public class TowerPlacementManager : MonoBehaviour
         if (placementMode)
         {
             Debug.Log("Tower placement mode ON - Click to place tower (ESC to cancel)");
+            CreatePreview();
         }
         else
         {
             Debug.Log("Tower placement mode OFF)");
+            DestroyPreview();
         }
     }
 
     void CancelPlacementMode()
     {
         placementMode = false;
+        DestroyPreview();
         Debug.Log("Tower placement cancelled");
     }
 
@@ -143,5 +163,69 @@ public class TowerPlacementManager : MonoBehaviour
             if (col.CompareTag("Tower")) return false;
         }
         return true;
+    }
+
+    void CreatePreview()
+    {
+        if (previewGO != null) return;
+        previewGO = new GameObject("TowerPreview", typeof(LineRenderer));
+        previewGO.layer = LayerMask.NameToLayer("Ignore Raycast");
+        previewLR = previewGO.GetComponent<LineRenderer>();
+        BuildRing(previewLR, previewRadius, previewValidColor);
+        previewGO.SetActive(true);
+    }
+
+    void UpdatePlacementPreview()
+    {
+        if (previewGO == null) CreatePreview();
+        Ray ray = playerCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Ground"))
+            {
+                Vector3 pos = hit.point;
+                previewGO.transform.position = new Vector3(pos.x, pos.y + 0.05f, pos.z);
+                bool clear = IsPositionClear(pos);
+                SetLineColor(previewLR, clear ? previewValidColor : previewInvalidColor);
+                previewGO.SetActive(true);
+                return;
+            }
+        }
+        // Hide if not on ground
+        previewGO.SetActive(false);
+    }
+
+    void DestroyPreview()
+    {
+        if (previewGO != null)
+        {
+            Destroy(previewGO);
+            previewGO = null;
+            previewLR = null;
+        }
+    }
+
+    void BuildRing(LineRenderer lr, float radius, Color color)
+    {
+        lr.useWorldSpace = false;
+        lr.loop = true;
+        lr.widthMultiplier = Mathf.Max(0.01f, previewLineWidth);
+        lr.positionCount = Mathf.Clamp(previewSegments, 8, 256);
+        var mat = new Material(Shader.Find("Sprites/Default"));
+        lr.material = mat;
+        SetLineColor(lr, color);
+        int count = lr.positionCount;
+        float step = Mathf.PI * 2f / count;
+        for (int i = 0; i < count; i++)
+        {
+            float a = i * step;
+            lr.SetPosition(i, new Vector3(Mathf.Cos(a) * radius, 0f, Mathf.Sin(a) * radius));
+        }
+    }
+
+    void SetLineColor(LineRenderer lr, Color c)
+    {
+        lr.startColor = c;
+        lr.endColor = c;
     }
 }
