@@ -2777,8 +2777,8 @@ MonoBehaviour:
   rangedDamage: 30
   projectileSpeed: 25
   rangedRange: 25
-  areaDamage: 50
-  areaRadius: 3
+  areaDamage: 60
+  areaRadius: 8
   rangedCooldown: 1
   areaCooldown: 5
   uiX: 10

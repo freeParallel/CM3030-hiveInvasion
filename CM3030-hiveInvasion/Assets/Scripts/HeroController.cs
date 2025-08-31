@@ -17,8 +17,8 @@ public class HeroController : MonoBehaviour
     [Tooltip("Damage dealt by a single ranged projectile shot")] public int rangedDamage = 30;
     [Tooltip("Speed of hero projectile (units per second)")] public float projectileSpeed = 25f;
     [Tooltip("Max range for ranged ability lock and shot")] public float rangedRange = 25f;
-    [Tooltip("Area blast damage")] public int areaDamage = 50;
-    [Tooltip("Radius for area blast")] public float areaRadius = 3f;
+    [Tooltip("Area blast damage")] public int areaDamage = 60;
+    [Tooltip("Radius for area blast")] public float areaRadius = 8f;
     [Tooltip("Cooldown in seconds for ranged shot (E)")] public float rangedCooldown = 1.0f;
     [Tooltip("Cooldown in seconds for area blast")] public float areaCooldown = 5f;
 
