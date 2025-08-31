@@ -28,6 +28,12 @@ public class TowerSelectionManager : MonoBehaviour
 
     void Update()
     {
+        // Reacquire camera if needed (scene changes can destroy cameras)
+        if (playerCamera == null)
+        {
+            playerCamera = Camera.main;
+        }
+
         // tower selection only when in placement mode
         TowerPlacementManager placementManager = FindObjectOfType<TowerPlacementManager>();
         bool inPlacementMode = placementManager != null && placementManager.IsInPlacementMode();
@@ -73,6 +79,11 @@ public class TowerSelectionManager : MonoBehaviour
             return;
         }
         
+        // Guard against missing camera
+        if (playerCamera == null)
+        {
+            return;
+        }
         Ray ray = playerCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
         if (Physics.Raycast(ray, out RaycastHit hit))
         {

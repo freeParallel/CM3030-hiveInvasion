@@ -24,7 +24,7 @@ public class PlacementHintUI : MonoBehaviour
         _instance.gameObject.SetActive(false);
     }
 
-    public static void SetText(string message)
+    public static void UpdateHint(string message)
     {
         if (_instance == null) return;
         _instance.SetLabelText(message);
