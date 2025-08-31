@@ -1541,8 +1541,8 @@ MonoBehaviour:
   edgeScrollSpeed: 40
   edgeScrollBoundary: 40
   mapBounds: {x: 60, y: 60}
-  zoomSpeed: 60
-  scrollSensitivity: 0.01
+  zoomSpeed: 40
+  scrollSensitivity: 1
   invertZoom: 0
   minFieldOfView: 25
   maxFieldOfView: 85

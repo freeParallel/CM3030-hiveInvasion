@@ -46,11 +46,11 @@ public class EnemyAnimationController : MonoBehaviour
     public void PlayAttack()
     {
         if (!hasAnimator || isDead) return;
-        if (!TryPlay(attackState, attackCrossfade, "Attack", "attack", "ATTACK"))
+        if (!TryPlay(attackState, attackCrossfade, "Attack", "attack", "ATTACK", "Shoot", "shoot", "SHOOT"))
         {
             if (!warnedAttack)
             {
-                Debug.LogWarning($"EnemyAnimationController: Attack state not found on {name}. Checked: '{attackState}', 'Attack', 'attack', 'ATTACK'.");
+                Debug.LogWarning($"EnemyAnimationController: Attack state not found on {name}. Checked: '{attackState}', 'Attack', 'attack', 'ATTACK', 'Shoot', 'shoot', 'SHOOT'.");
                 warnedAttack = true;
             }
         }

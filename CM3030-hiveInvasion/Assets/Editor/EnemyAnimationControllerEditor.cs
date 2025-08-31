@@ -50,7 +50,7 @@ public class EnemyAnimationControllerEditor : Editor
         if (names.Count == 0) return false;
 
         walk = FindFirst(names, new[] { "walk" });
-        attack = FindFirst(names, new[] { "attack", "atk", "bite", "strike", "hit" });
+        attack = FindFirst(names, new[] { "attack", "atk", "bite", "strike", "hit", "shoot", "fire" });
         die = FindFirst(names, new[] { "die_1", "die", "death", "dead" });
         return true;
     }
