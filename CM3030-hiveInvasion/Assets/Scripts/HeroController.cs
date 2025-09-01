@@ -171,6 +171,7 @@ public class HeroController : MonoBehaviour
                 if (agent.enabled && IsValidDestination(hit.point))
                 {
                     agent.SetDestination(hit.point);
+                    SpawnMoveMarker(hit.point);
                     Debug.Log("Debug going to " + hit.point);
                 }
                 else
@@ -395,6 +396,70 @@ public class HeroController : MonoBehaviour
     {
         lr.startColor = c;
         lr.endColor = c;
+    }
+
+    // Right-click move marker (a small fading cross on the ground)
+    void SpawnMoveMarker(Vector3 pos)
+    {
+        float r = 0.75f;
+        float w = 0.06f;
+        Color col = new Color(0.2f, 1f, 1f, 0.9f);
+
+        var go = new GameObject("MoveMarker");
+        go.layer = LayerMask.NameToLayer("Ignore Raycast");
+        go.transform.position = new Vector3(pos.x, pos.y + 0.05f, pos.z);
+
+        // Two line renderers forming an X
+        var lr1 = go.AddComponent<LineRenderer>();
+        ConfigureLR(lr1, w, col);
+        lr1.positionCount = 2;
+        lr1.useWorldSpace = false;
+        lr1.SetPosition(0, new Vector3(-r, 0f, -r));
+        lr1.SetPosition(1, new Vector3(r, 0f, r));
+
+        var lr2 = new GameObject("Line2").AddComponent<LineRenderer>();
+        lr2.transform.SetParent(go.transform, false);
+        ConfigureLR(lr2, w, col);
+        lr2.positionCount = 2;
+        lr2.useWorldSpace = false;
+        lr2.SetPosition(0, new Vector3(-r, 0f, r));
+        lr2.SetPosition(1, new Vector3(r, 0f, -r));
+
+        StartCoroutine(FadeAndScaleMarker(go, new [] { lr1, lr2 }, 0.35f));
+    }
+
+    void ConfigureLR(LineRenderer lr, float width, Color color)
+    {
+        lr.material = new Material(Shader.Find("Sprites/Default"));
+        lr.widthMultiplier = width;
+        lr.startColor = color;
+        lr.endColor = color;
+        lr.numCapVertices = 4;
+        lr.numCornerVertices = 0;
+    }
+
+    System.Collections.IEnumerator FadeAndScaleMarker(GameObject go, LineRenderer[] lines, float duration)
+    {
+        float t = 0f;
+        var start = go.transform.localScale;
+        var end = start * 1.4f;
+        Color startCol = lines[0].startColor;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            float u = Mathf.Clamp01(t / duration);
+            // Ease out
+            float e = 1f - Mathf.Pow(1f - u, 3f);
+            go.transform.localScale = Vector3.Lerp(start, end, e);
+            Color c = new Color(startCol.r, startCol.g, startCol.b, Mathf.Lerp(startCol.a, 0f, e));
+            foreach (var lr in lines)
+            {
+                lr.startColor = c;
+                lr.endColor = c;
+            }
+            yield return null;
+        }
+        Destroy(go);
     }
 
     System.Collections.IEnumerator FlashColor(Color flashColor, float duration)

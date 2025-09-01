@@ -23,6 +23,13 @@ public class PauseMenuController : MonoBehaviour
         var gs = FindObjectOfType<GameStateController>();
         if (gs != null && gs.IsGameOver) return;
 
+        // Block pause while placing towers; ESC should cancel placement instead
+        var placement = FindObjectOfType<TowerPlacementManager>();
+        if (placement != null && placement.IsInPlacementMode())
+        {
+            return;
+        }
+
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             TogglePause();
