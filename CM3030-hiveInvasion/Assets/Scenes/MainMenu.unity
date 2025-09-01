@@ -33,7 +33,7 @@ RenderSettings:
   m_HaloTexture: {fileID: 0}
   m_SpotCookie: {fileID: 10001, guid: 0000000000000000e000000000000000, type: 0}
   m_DefaultReflectionMode: 0
-  m_DefaultReflectionResolution: 128
+  m_DefaultReflectionResolution: 512
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
@@ -66,7 +66,7 @@ LightmapSettings:
     m_LightmapParameters: {fileID: 0}
     m_LightmapsBakeMode: 1
     m_TextureCompression: 1
-    m_ReflectionCompression: 2
+    m_ReflectionCompression: 1
     m_MixedBakeMode: 2
     m_BakeBackend: 1
     m_PVRSampling: 1
@@ -272,6 +272,11 @@ MonoBehaviour:
   gameplaySceneName: SampleScene
   overlayAlpha: 0.25
   overlayColor: {r: 0, g: 0, b: 0, a: 1}
+  menuMusic: {fileID: 0}
+  playMenuMusic: 1
+  loopMusic: 1
+  musicVolume: 0.5
+  menuMusicAssetPath: Assets/MaxStack/Wirescapes/Audio/Music/WS Urban Decay.wav
 --- !u!4 &1196133349
 Transform:
   m_ObjectHideFlags: 0
