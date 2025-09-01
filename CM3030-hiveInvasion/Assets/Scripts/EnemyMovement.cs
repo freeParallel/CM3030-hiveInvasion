@@ -70,6 +70,8 @@ public class EnemyMovement : MonoBehaviour
 
         // Subscribe to gate destruction
         GateHealth.OnGateDestroyed.AddListener(OnGateDestroyed);
+        GateHealth.OnGateOpened.AddListener(OnGateOpened);
+        GateHealth.OnGateClosed.AddListener(OnGateClosed);
 
         // Initial target
         AcquireTarget();
@@ -78,6 +80,8 @@ public class EnemyMovement : MonoBehaviour
     void OnDestroy()
     {
         GateHealth.OnGateDestroyed.RemoveListener(OnGateDestroyed);
+        GateHealth.OnGateOpened.RemoveListener(OnGateOpened);
+        GateHealth.OnGateClosed.RemoveListener(OnGateClosed);
     }
 
     void Update()
@@ -132,6 +136,13 @@ public class EnemyMovement : MonoBehaviour
         // Refresh cached references in case scene objects were created/renamed after Start
         if (gateObject == null)
             gateObject = SafeFindByTagOrName("Gate", "Gate");
+
+        // If gate has been opened globally, never target it
+        if (GateHealth.IsGateOpen)
+        {
+            gateObject = null;
+            if (currentPriority == TargetPriority.Gate) currentPriority = TargetPriority.Base;
+        }
         if (baseObject == null)
             baseObject = SafeFindByTagOrNames("Base", new string[] { "PlayerBase", "PlayerTower" });
 
@@ -173,6 +184,23 @@ public class EnemyMovement : MonoBehaviour
         gateObject = null;
         currentPriority = TargetPriority.Base;
         currentTarget = null; // force reacquire
+        AcquireTarget();
+    }
+
+    private void OnGateOpened()
+    {
+        // Treat as if gate is gone for targeting purposes
+        gateObject = null;
+        currentPriority = TargetPriority.Base;
+        currentTarget = null;
+        AcquireTarget();
+    }
+
+    private void OnGateClosed()
+    {
+        // Restore targeting to gate if present
+        currentPriority = TargetPriority.Gate;
+        currentTarget = null;
         AcquireTarget();
     }
 

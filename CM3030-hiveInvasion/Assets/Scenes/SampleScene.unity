@@ -992,6 +992,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startingPoints: 250
   towerCost: 100
+  useLinearScaling: 1
+  costIncrement: 25
+  costMultiplier: 1.15
   currentPoints: 0
 --- !u!4 &350603924
 Transform:
@@ -1384,6 +1387,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   resourceText: {fileID: 0}
+  showTowerCost: 1
+  useNewLineForCost: 1
+  costRelativeSize: 0.75
+  costColor: {r: 0.82, g: 0.93, b: 1, a: 1}
+  showTowerCount: 1
+  countRelativeSize: 0.75
+  countColor: {r: 0.9, g: 1, b: 0.9, a: 1}
+  animateDuration: 0.45
+  punchScale: 0.15
+  gainHighlight: {r: 1, g: 0.85, b: 0.2, a: 1}
+  spendHighlight: {r: 1, g: 0.35, b: 0.35, a: 1}
 --- !u!4 &630926054 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4398040221165394, guid: 869bc2aa529be4d4987badf65386c72f, type: 3}
@@ -1821,6 +1835,7 @@ MonoBehaviour:
   maxFieldOfView: 85
   minOrthographicSize: 5
   maxOrthographicSize: 60
+  rotateSpeed: 90
 --- !u!114 &930144958
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2650,6 +2665,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   placedTowers: []
+  maxTowers: 10
 --- !u!4 &1376297719
 Transform:
   m_ObjectHideFlags: 0
@@ -2829,6 +2845,7 @@ MonoBehaviour:
   maxFieldOfView: 85
   minOrthographicSize: 5
   maxOrthographicSize: 60
+  rotateSpeed: 90
 --- !u!4 &1438208943
 Transform:
   m_ObjectHideFlags: 0
@@ -3357,6 +3374,16 @@ MonoBehaviour:
   towerPrefab: {fileID: 756524670962922729, guid: 55953f17320ea4e37a865197332b8267, type: 3}
   placeTowerButton: {fileID: 0}
   minTowerSpacing: 2
+  previewRadius: 0.75
+  previewValidColor: {r: 0.4, g: 1, b: 0.4, a: 0.9}
+  previewInvalidColor: {r: 1, g: 0.35, b: 0.35, a: 0.9}
+  previewLineWidth: 0.1
+  previewSegments: 64
+  usePlacementRadius: 1
+  placementRadius: 25
+  placementRingColor: {r: 1, g: 0.85, b: 0.2, a: 0.85}
+  placementRingWidth: 0.1
+  placementRingSegments: 96
 --- !u!4 &1577057113
 Transform:
   m_ObjectHideFlags: 0
@@ -3586,6 +3613,10 @@ MonoBehaviour:
   areaRadius: 8
   rangedCooldown: 1
   areaCooldown: 5
+  aoeRingColor: {r: 0.2, g: 1, b: 1, a: 0.85}
+  aoeRingDuration: 0.35
+  aoeRingWidth: 0.15
+  aoeRingSegments: 64
   uiX: 10
   uiY: 200
   uiBoxWidth: 180
@@ -4745,6 +4776,7 @@ GameObject:
   - component: {fileID: 2131524832}
   - component: {fileID: 2131524836}
   - component: {fileID: 2131524837}
+  - component: {fileID: 2131524838}
   m_Layer: 0
   m_Name: Gate
   m_TagString: Gate
@@ -4871,6 +4903,31 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 0, z: 0}
   m_TimeToStationary: 0.5
+--- !u!114 &2131524838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2131524831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ad4f26f8268741669a4607f926a0b45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mode: 0
+  distance: 4
+  duration: 1
+  useTransformRight: 1
+  sideDirection: {x: 1, y: 0, z: 0}
+  disableCollidersOnOpen: 1
+  hoverRingColor: {r: 0.9, g: 0.95, b: 1, a: 0.35}
+  hoverRingWidth: 0.08
+  hoverRingSegments: 64
+  hoverRingPadding: 0.5
+  openOnStart: 0
+  debugOpenKey: 103
+  debugCloseKey: 104
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
