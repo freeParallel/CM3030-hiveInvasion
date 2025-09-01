@@ -46,7 +46,7 @@ public class EnemyAnimationController : MonoBehaviour
     public void PlayAttack()
     {
         if (!hasAnimator || isDead) return;
-        if (!TryPlay(attackState, attackCrossfade, "Attack", "attack", "ATTACK", "Shoot", "shoot", "SHOOT"))
+        if (!TryPlay(attackState, attackCrossfade, "Attack", "attack", "ATTACK", "Shoot", "shoot", "SHOOT", "Fire", "fire", "FIRE"))
         {
             if (!warnedAttack)
             {

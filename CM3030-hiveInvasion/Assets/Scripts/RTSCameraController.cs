@@ -89,27 +89,29 @@ public class RTSCameraController : MonoBehaviour
 
     private void HandleMovement()
     {
-        Vector3 movement = Vector3.zero;
+        // Build camera-relative planar axes (ignore pitch/roll)
+        Vector3 fwd = new Vector3(transform.forward.x, 0f, transform.forward.z).normalized;
+        Vector3 right = new Vector3(transform.right.x, 0f, transform.right.z).normalized;
 
-        // Keyboard movement (WASD)
+        Vector3 moveDir = Vector3.zero;
+
+        // Keyboard movement (WASD) relative to camera yaw
         if (keyboardInput != Vector2.zero)
         {
-            movement.x = keyboardInput.x;
-            movement.z = keyboardInput.y;
-            movement = movement.normalized * moveSpeed;
+            moveDir += right * keyboardInput.x + fwd * keyboardInput.y;
         }
 
-        // Edge scrolling
+        // Edge scrolling relative to camera yaw
         Vector2 edgeMovement = GetEdgeScrollMovement();
         if (edgeMovement != Vector2.zero)
         {
-            movement.x += edgeMovement.x * edgeScrollSpeed;
-            movement.z += edgeMovement.y * edgeScrollSpeed;
+            moveDir += right * edgeMovement.x + fwd * edgeMovement.y;
         }
 
         // Apply movement
-        if (movement != Vector3.zero)
+        if (moveDir.sqrMagnitude > 0.0001f)
         {
+            Vector3 movement = moveDir.normalized * moveSpeed;
             targetPosition += movement * Time.deltaTime;
             targetPosition = ClampToBounds(targetPosition);
             transform.position = targetPosition;

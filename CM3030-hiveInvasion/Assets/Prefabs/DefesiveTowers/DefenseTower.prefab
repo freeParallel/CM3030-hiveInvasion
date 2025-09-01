@@ -48,8 +48,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   range: 10
-  damage: 25
-  fireRate: 2
+  damage: 15
+  fireRate: 4
   useProjectiles: 1
   projectileStyle: 1
   muzzleTransform: {fileID: 4012209423044073315}

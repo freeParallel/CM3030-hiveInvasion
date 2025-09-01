@@ -38,13 +38,13 @@ public class TowerSelectionManager : MonoBehaviour
         TowerPlacementManager placementManager = FindObjectOfType<TowerPlacementManager>();
         bool inPlacementMode = placementManager != null && placementManager.IsInPlacementMode();
 
-        if (!inPlacementMode && Mouse.current.leftButton.wasPressedThisFrame)
+        if (!inPlacementMode && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
             TrySelectTower();
         }
         
         // deselect with the esc key or right click
-        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             DeselectTower();
         }
@@ -74,7 +74,7 @@ public class TowerSelectionManager : MonoBehaviour
     void TrySelectTower()
     {
         // ignore clicks on UI
-        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+        if (UnityEngine.EventSystems.EventSystem.current != null && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
         {
             return;
         }

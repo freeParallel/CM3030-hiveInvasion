@@ -14,9 +14,9 @@ public class ToastUI : MonoBehaviour
     private TextMeshProUGUI _text;
     private Coroutine _routine;
 
-    [Header("Defaults")] public Vector2 anchor = new Vector2(0.5f, 0.8f);
-    public Vector2 size = new Vector2(600, 80);
-    public int fontSize = 36;
+    [Header("Defaults")] public Vector2 anchor = new Vector2(0.5f, 0.15f); // lower-middle
+    public Vector2 size = new Vector2(600, 60);
+    public int fontSize = 24;
 
     public static void Show(string message, Color color, float duration = 1.5f)
     {
@@ -35,15 +35,17 @@ public class ToastUI : MonoBehaviour
 
     private void BuildUI()
     {
-        // Try to find an existing Canvas; else create our own overlay canvas (Screen Space - Overlay)
-        _canvas = FindObjectOfType<Canvas>();
-        if (_canvas == null)
-        {
-            var cgo = new GameObject("ToastCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            _canvas = cgo.GetComponent<Canvas>();
-            _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            DontDestroyOnLoad(cgo);
-        }
+        // Always create our own topmost Screen Space - Overlay canvas to avoid scale/order issues
+        var cgo = new GameObject("ToastCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+        _canvas = cgo.GetComponent<Canvas>();
+        _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        _canvas.sortingOrder = 5000; // above most UI
+        _canvas.overrideSorting = true;
+        var scaler = cgo.GetComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.matchWidthOrHeight = 0.5f;
+        DontDestroyOnLoad(cgo);
 
         // Panel with CanvasGroup
         var panel = new GameObject("ToastPanel", typeof(RectTransform), typeof(CanvasGroup));
